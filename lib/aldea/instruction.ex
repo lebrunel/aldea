@@ -1,65 +1,39 @@
 defmodule Aldea.Instruction do
   @moduledoc """
-  TODO
+  An Instruction is Aldea's smallest contiguous unit of execution. An
+  instruction consists of an `OpCode` byte and a number of attributes, depending
+  on the `OpCode`.
   """
-  import Record
+  alias Aldea.Serializable
+  import Aldea.Encoding, only: [
+    cbor_seq_decode: 1,
+    cbor_seq_encode: 1,
+    varint_encode: 1,
+    varint_parse_data: 1,
+  ]
 
-  defrecord(:import_inst, :IMPORT, pkg_id: nil)
-  defrecord(:load_inst, :LOAD, output_id: nil)
-  defrecord(:load_by_origin_inst, :LOADBYORIGIN, origin: nil)
-  defrecord(:new_inst, :NEW, idx: nil, export_idx: nil, args: [])
-  defrecord(:call_inst, :CALL, idx: nil, method_idx: nil, args: [])
-  defrecord(:exec_inst, :EXEC, idx: nil, export_idx: nil, method_idx: nil, args: [])
-  defrecord(:exec_func_inst, :EXECFUNC, idx: nil, export_idx: nil, args: [])
-  defrecord(:fund_inst, :FUND, idx: nil)
-  defrecord(:lock_inst, :LOCK, idx: nil, pubkey_hash: nil)
-  defrecord(:deploy_inst, :DEPLOY, entry: nil, code: nil)
-  defrecord(:sign_inst, :SIGN, sig: nil, pubkey: nil)
-  defrecord(:sign_to_inst, :SIGNTO, sig: nil, pubkey: nil)
+  defstruct op: nil, attrs: %{}
 
-  @typedoc "TODO"
+  @typedoc "Instruction"
   @type t() ::
-    import_inst() |
-    load_inst() |
-    load_by_origin_inst() |
-    new_inst() |
-    call_inst() |
-    exec_inst() |
-    exec_func_inst() |
-    fund_inst() |
-    lock_inst() |
-    deploy_inst() |
-    sign_inst() |
-    sign_to_inst()
+    %__MODULE__{op: :IMPORT, attrs: %{pkg_id: <<_::256>>}} |
+    %__MODULE__{op: :LOAD, attrs: %{output_id: <<_::256>>}} |
+    %__MODULE__{op: :LOADBYORIGIN, attrs: %{origin: <<_::272>>}} |
+    %__MODULE__{op: :NEW, attrs: %{idx: idx(), export_idx: idx(), args: list(any())}} |
+    %__MODULE__{op: :CALL, attrs: %{idx: idx(), method_idx: idx(), args: list(any())}} |
+    %__MODULE__{op: :EXEC, attrs: %{idx: idx(), export_idx: idx(), method_idx: idx(), args: list(any())}} |
+    %__MODULE__{op: :EXECFN, attrs: %{idx: idx(), export_idx: idx(), args: list(any())}} |
+    %__MODULE__{op: :FUND, attrs: %{idx: idx()}} |
+    %__MODULE__{op: :LOCK, attrs: %{idx: idx(), pubkey_hash: <<_::160>>}} |
+    %__MODULE__{op: :DEPLOY, attrs: %{entry: list(String.t()), code: pkg()}} |
+    %__MODULE__{op: :SIGN, attrs: %{sig: <<_::512>>, pubkey: <<_::256>>}} |
+    %__MODULE__{op: :SIGNTO, attrs: %{sig: <<_::512>>, pubkey: <<_::256>>}}
 
-  @typedoc "TODO"
+  @typedoc "Index"
   @type idx() :: non_neg_integer()
-  @typedoc "TODO"
+
+  @typedoc "Package"
   @type pkg() :: %{String.t() => String.t()}
-  @typedoc "IMPORT instruction"
-  @type import_inst() :: record(:import_inst, pkg_id: binary())
-  @typedoc "LOAD instruction"
-  @type load_inst() :: record(:load_inst, output_id: binary())
-  @typedoc "LOADBYORIGIN instruction"
-  @type load_by_origin_inst() :: record(:load_by_origin_inst, origin: binary())
-  @typedoc "NEW instruction"
-  @type new_inst() :: record(:new_inst, idx: idx(), export_idx: idx(), args: list(any()))
-  @typedoc "CALL instruction"
-  @type call_inst() :: record(:call_inst, idx: idx(), method_idx: idx(), args: list(any()))
-  @typedoc "EXEC instruction"
-  @type exec_inst() :: record(:exec_inst, idx: idx(), export_idx: idx(), method_idx: idx(), args: list(any()))
-  @typedoc "EXECFUNC instruction"
-  @type exec_func_inst() :: record(:exec_func_inst, idx: idx(), export_idx: idx(), args: list(any()))
-  @typedoc "FUND instruction"
-  @type fund_inst() :: record(:fund_inst, idx: idx())
-  @typedoc "LOCK instruction"
-  @type lock_inst() :: record(:lock_inst, idx: idx(), pubkey_hash: binary())
-  @typedoc "DEPLOY instruction"
-  @type deploy_inst() :: record(:deploy_inst, entry: list(String.t()), code: pkg())
-  @typedoc "SIGN instruction"
-  @type sign_inst() :: record(:sign_inst, sig: binary(), pubkey: binary())
-  @typedoc "SIGNTO instruction"
-  @type sign_to_inst() :: record(:sign_to_inst, sig: binary(), pubkey: binary())
 
   @op_codes %{
     # Loading
@@ -81,6 +55,128 @@ defmodule Aldea.Instruction do
     SIGNTO: 0xE2,
   }
 
+  @doc """
+  Returns a map ok known op codes to bytes.
+  """
+  @spec op_codes() :: map()
+  def op_codes(), do: @op_codes
 
+  @doc """
+  Returns an Instruction from the given binary.
+  """
+  @spec from_bin(binary()) :: {:ok, t()} | {:error, term()}
+  def from_bin(bin) when is_binary(bin) do
+    with {:ok, instruction, <<>>} <- Serializable.parse(struct(__MODULE__), bin) do
+      {:ok, instruction}
+    end
+  end
+
+  @doc """
+  Returns the Instruction as a binary.
+  """
+  @spec to_bin(t()) :: binary()
+  def to_bin(%__MODULE__{} = instruction), do: Serializable.serialize(instruction)
+
+
+  defimpl Serializable do
+    alias Aldea.Instruction
+
+    @impl true
+    def parse(instruction, <<op_code, data::binary>>) do
+      with {:ok, op} <- find_op_by_code(op_code),
+           {:ok, data, rest} <- varint_parse_data(data),
+           attrs when is_map(attrs) <- parse_attrs(op, data)
+      do
+        {:ok, struct(instruction, op: op, attrs: attrs), rest}
+      end
+    end
+
+    @impl true
+    def serialize(%{op: op, attrs: attrs}) do
+      op_code = Instruction.op_codes()[op]
+      attrs_bin = serialize_attrs(op, attrs)
+      attrs_len = varint_encode(byte_size(attrs_bin))
+      <<op_code, attrs_len::binary, attrs_bin::binary>>
+    end
+
+    # Finds the op code by the byte.
+    @spec find_op_by_code(non_neg_integer()) :: {:ok, atom()} | {:error, term()}
+    defp find_op_by_code(op_code) do
+      op_codes = Instruction.op_codes()
+      case Enum.find(op_codes, fn {_key, val} -> val == op_code end) do
+        {op, _code} -> {:ok, op}
+        nil -> {:error, :invalid_op_code}
+      end
+    end
+
+    # Parse the attributes from the given binary identified by the op code.
+    @spec parse_attrs(atom(), binary()) :: map() | {:error, term()}
+    defp parse_attrs(:IMPORT, pkg_id), do: %{pkg_id: pkg_id}
+    defp parse_attrs(:LOAD, output_id), do: %{output_id: output_id}
+    defp parse_attrs(:LOADBYORIGIN, origin), do: %{origin: origin}
+    defp parse_attrs(:NEW, <<idx::little-16, export_idx::little-16, args::binary>>) do
+      with {:ok, args} <- cbor_seq_decode(args) do
+        %{idx: idx, export_idx: export_idx, args: args}
+      end
+    end
+    defp parse_attrs(:CALL, <<idx::little-16, method_idx::little-16, args::binary>>) do
+      with {:ok, args} <- cbor_seq_decode(args) do
+        %{idx: idx, method_idx: method_idx, args: args}
+      end
+    end
+    defp parse_attrs(:EXEC, <<idx::little-16, export_idx::little-16, method_idx::little-16, args::binary>>) do
+      with {:ok, args} <- cbor_seq_decode(args) do
+        %{idx: idx, export_idx: export_idx, method_idx: method_idx, args: args}
+      end
+    end
+    defp parse_attrs(:EXECFN, <<idx::little-16, export_idx::little-16, args::binary>>) do
+      with {:ok, args} <- cbor_seq_decode(args) do
+        %{idx: idx, export_idx: export_idx, args: args}
+      end
+    end
+    defp parse_attrs(:FUND, <<idx::little-16>>), do: %{idx: idx}
+    defp parse_attrs(:LOCK, <<idx::little-16, pubkey_hash::binary-size(20)>>),
+      do: %{idx: idx, pubkey_hash: pubkey_hash}
+    defp parse_attrs(:DEPLOY, data) do
+      with {:ok, [entry, code]} <- cbor_seq_decode(data) do
+        %{entry: entry, code: code}
+      end
+    end
+    defp parse_attrs(:SIGN, <<sig::binary-size(64), pubkey::binary-size(32)>>),
+      do: %{sig: sig, pubkey: pubkey}
+    defp parse_attrs(:SIGNTO, <<sig::binary-size(64), pubkey::binary-size(32)>>),
+      do: %{sig: sig, pubkey: pubkey}
+
+    # Serializes the attributes map into a binary.
+    @spec serialize_attrs(atom(), map()) :: binary()
+    defp serialize_attrs(:IMPORT, %{pkg_id: pkg_id}), do: pkg_id
+    defp serialize_attrs(:LOAD, %{output_id: output_id}), do: output_id
+    defp serialize_attrs(:LOADBYORIGIN, %{origin: origin}), do: origin
+    defp serialize_attrs(:NEW, %{idx: idx, export_idx: export_idx, args: args}) do
+      <<idx::little-16, export_idx::little-16, cbor_seq_encode(args)::binary>>
+    end
+    defp serialize_attrs(:CALL, %{idx: idx, method_idx: method_idx, args: args}) do
+      <<idx::little-16, method_idx::little-16, cbor_seq_encode(args)::binary>>
+    end
+    defp serialize_attrs(:EXEC, %{idx: idx, export_idx: export_idx, method_idx: method_idx, args: args}) do
+      <<idx::little-16, export_idx::little-16, method_idx::little-16, cbor_seq_encode(args)::binary>>
+    end
+    defp serialize_attrs(:EXECFN, %{idx: idx, export_idx: export_idx, args: args}) do
+      <<idx::little-16, export_idx::little-16, cbor_seq_encode(args)::binary>>
+    end
+    defp serialize_attrs(:FUND, %{idx: idx}), do: <<idx::little-16>>
+    defp serialize_attrs(:LOCK, %{idx: idx, pubkey_hash: pubkey_hash}) do
+      <<idx::little-16, pubkey_hash::binary>>
+    end
+    defp serialize_attrs(:DEPLOY, %{entry: entry, code: code}) do
+      cbor_seq_encode([entry, code])
+    end
+    defp serialize_attrs(:SIGN, %{sig: sig, pubkey: pubkey}) do
+      <<sig::binary, pubkey::binary>>
+    end
+    defp serialize_attrs(:SIGNTO, %{sig: sig, pubkey: pubkey}) do
+      <<sig::binary, pubkey::binary>>
+    end
+  end
 
 end
