@@ -2,7 +2,10 @@ defmodule Aldea.PrivKey do
   @moduledoc """
   An Aldea Private Key is random 32-byte binary.
   """
-  import Eddy.Util, only: [decode: 2, encode: 2]
+  import Aldea.Encoding, only: [
+    b32_decode: 2, b32_encode: 2,
+    bin_decode: 2, bin_encode: 2,
+  ]
 
   defstruct [:d]
 
@@ -39,9 +42,7 @@ defmodule Aldea.PrivKey do
   """
   @spec from_hex(String.t()) :: {:ok, t()} | {:error, term()}
   def from_hex(hex) when is_binary(hex) do
-    with {:ok, bin} <- decode(hex, :hex) do
-      from_bin(bin)
-    end
+    with {:ok, bin} <- bin_decode(hex, :hex), do: from_bin(bin)
   end
 
   @doc """
@@ -50,9 +51,7 @@ defmodule Aldea.PrivKey do
   @spec from_string(String.t()) :: {:ok, t()} | {:error, term()}
   def from_string(str) when is_binary(str) do
     prefix = Map.get(@bech32_prefix, Aldea.network())
-    with {:ok, {^prefix, bin, :bech32m}} <- ExBech32.decode(str) do
-      from_bin(bin)
-    end
+    with {:ok, bin} <- b32_decode(str, prefix), do: from_bin(bin)
   end
 
   @doc """
@@ -65,7 +64,7 @@ defmodule Aldea.PrivKey do
   Returns the PrivKey as a hex-encoded string.
   """
   @spec to_hex(t()) :: String.t()
-  def to_hex(%__MODULE__{d: d}), do: encode(d, :hex)
+  def to_hex(%__MODULE__{d: d}), do: bin_encode(d, :hex)
 
   @doc """
   Returns the PrivKey as a bech32m-encoded string.
@@ -73,9 +72,7 @@ defmodule Aldea.PrivKey do
   @spec to_string(t()) :: String.t()
   def to_string(%__MODULE__{d: d}) do
     prefix = Map.get(@bech32_prefix, Aldea.network())
-    with {:ok, str} <- ExBech32.encode(prefix, d, :bech32m) do
-      str
-    end
+    b32_encode(d, prefix)
   end
 
 end

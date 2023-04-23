@@ -10,7 +10,7 @@ defmodule Aldea.Pointer do
 
       3b2af88dad7f1847f5b333852b71ac6fd2ae519ba2d359e8ce07b071aad30e80_1
   """
-  import Eddy.Util, only: [decode: 2, encode: 2]
+  import Aldea.Encoding, only: [bin_decode: 2, bin_encode: 2]
 
   defstruct [:id, :idx]
 
@@ -37,7 +37,7 @@ defmodule Aldea.Pointer do
   """
   @spec from_hex(String.t()) :: {:ok, t()} | {:error, term()}
   def from_hex(hex) when is_binary(hex) do
-    with {:ok, bin} <- decode(hex, :hex) do
+    with {:ok, bin} <- bin_decode(hex, :hex) do
       from_bin(bin)
     end
   end
@@ -48,7 +48,7 @@ defmodule Aldea.Pointer do
   @spec from_string(String.t()) :: {:ok, t()} | {:error, term()}
   def from_string(str) when is_binary(str) do
     with [^str, id, idx] <- Regex.run(~r/^([a-f0-9]{64})_(\d+)$/, str),
-         {:ok, id} <- decode(id, :hex)
+         {:ok, id} <- bin_decode(id, :hex)
     do
       {:ok, struct(__MODULE__, id: id, idx: String.to_integer(idx))}
     else
@@ -60,7 +60,7 @@ defmodule Aldea.Pointer do
   Returns the hex-encoded Pointer ID.
   """
   @spec get_id(t()) :: String.t()
-  def get_id(%__MODULE__{id: id}), do: encode(id, :hex)
+  def get_id(%__MODULE__{id: id}), do: bin_encode(id, :hex)
 
   @doc """
   Returns the Pointer as a 34-byte binary.
@@ -72,12 +72,12 @@ defmodule Aldea.Pointer do
   Returns the Pointer as a hex-encoded string.
   """
   @spec to_hex(t()) :: String.t()
-  def to_hex(%__MODULE__{} = ptr), do: to_bin(ptr) |> encode(:hex)
+  def to_hex(%__MODULE__{} = ptr), do: to_bin(ptr) |> bin_encode(:hex)
 
   @doc """
   Returns the Pointer as a bech32m-encoded string.
   """
   @spec to_string(t()) :: String.t()
-  def to_string(%__MODULE__{id: id, idx: idx}), do: "#{encode(id, :hex)}_#{idx}"
+  def to_string(%__MODULE__{id: id, idx: idx}), do: "#{bin_encode(id, :hex)}_#{idx}"
 
 end

@@ -6,8 +6,11 @@ defmodule Aldea.PubKey do
   PubKeys are serialized as the 32-byte Y coordinate, with the last byte
   encoding the sign of X.
   """
-  import Eddy.Util, only: [decode: 2, encode: 2]
   alias Aldea.PrivKey
+  import Aldea.Encoding, only: [
+    b32_decode: 2, b32_encode: 2,
+    bin_decode: 2, bin_encode: 2,
+  ]
 
   defstruct [:point]
 
@@ -45,9 +48,7 @@ defmodule Aldea.PubKey do
   """
   @spec from_hex(String.t()) :: {:ok, t()} | {:error, term()}
   def from_hex(hex) when is_binary(hex) do
-    with {:ok, bin} <- decode(hex, :hex) do
-      from_bin(bin)
-    end
+    with {:ok, bin} <- bin_decode(hex, :hex), do: from_bin(bin)
   end
 
   @doc """
@@ -56,9 +57,7 @@ defmodule Aldea.PubKey do
   @spec from_string(String.t()) :: {:ok, t()} | {:error, term()}
   def from_string(str) when is_binary(str) do
     prefix = Map.get(@bech32_prefix, Aldea.network())
-    with {:ok, {^prefix, bin, :bech32m}} <- ExBech32.decode(str) do
-      from_bin(bin)
-    end
+    with {:ok, bin} <- b32_decode(str, prefix), do: from_bin(bin)
   end
 
   @doc """
@@ -72,7 +71,7 @@ defmodule Aldea.PubKey do
   Returns the PubKey as a hex-encoded string.
   """
   @spec to_hex(t()) :: String.t()
-  def to_hex(%__MODULE__{} = pubkey), do: to_bin(pubkey) |> encode(:hex)
+  def to_hex(%__MODULE__{} = pubkey), do: to_bin(pubkey) |> bin_encode(:hex)
 
   @doc """
   Returns the PubKey as a bech32m-encoded string.
@@ -80,9 +79,7 @@ defmodule Aldea.PubKey do
   @spec to_string(t()) :: String.t()
   def to_string(%__MODULE__{} = pubkey) do
     prefix = Map.get(@bech32_prefix, Aldea.network())
-    with {:ok, str} <- ExBech32.encode(prefix, to_bin(pubkey), :bech32m) do
-      str
-    end
+    b32_encode(to_bin(pubkey), prefix)
   end
 
 end

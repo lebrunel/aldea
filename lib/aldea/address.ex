@@ -8,6 +8,7 @@ defmodule Aldea.Address do
       addr1hldfmuyecahs4c9uypz6w4rv04cpzf50a5rsfc
   """
   alias Aldea.PubKey
+  import Aldea.Encoding, only: [b32_decode: 2, b32_encode: 2]
 
   defstruct [:hash]
 
@@ -34,7 +35,7 @@ defmodule Aldea.Address do
   @spec from_string(String.t()) :: {:ok, t()} | {:error, term()}
   def from_string(str) when is_binary(str) do
     prefix = Map.get(@bech32_prefix, Aldea.network())
-    with {:ok, {^prefix, hash, :bech32m}} <- ExBech32.decode(str) do
+    with {:ok, hash} <- b32_decode(str, prefix) do
       {:ok, struct(__MODULE__, hash: hash)}
     end
   end
@@ -45,9 +46,7 @@ defmodule Aldea.Address do
   @spec to_string(t()) :: String.t()
   def to_string(%__MODULE__{hash: hash}) do
     prefix = Map.get(@bech32_prefix, Aldea.network())
-    with {:ok, str} <- ExBech32.encode(prefix, hash, :bech32m) do
-      str
-    end
+    b32_encode(hash, prefix)
   end
 
 end
