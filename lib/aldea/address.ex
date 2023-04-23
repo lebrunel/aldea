@@ -29,7 +29,7 @@ defmodule Aldea.Address do
   end
 
   @doc """
-  Returns an Address from the encoded string.
+  Returns an Address from the bech32m-encoded string.
   """
   @spec from_string(String.t()) :: {:ok, t()} | {:error, term()}
   def from_string(str) when is_binary(str) do

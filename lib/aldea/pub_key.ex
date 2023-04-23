@@ -51,7 +51,7 @@ defmodule Aldea.PubKey do
   end
 
   @doc """
-  Returns a PubKey from the given Bech32m-encoded string.
+  Returns a PubKey from the given bech32m-encoded string.
   """
   @spec from_string(String.t()) :: {:ok, t()} | {:error, term()}
   def from_string(str) when is_binary(str) do
@@ -75,7 +75,7 @@ defmodule Aldea.PubKey do
   def to_hex(%__MODULE__{} = pubkey), do: to_bin(pubkey) |> encode(:hex)
 
   @doc """
-  Returns the PubKey as a Bech32m-encoded string.
+  Returns the PubKey as a bech32m-encoded string.
   """
   @spec to_string(t()) :: String.t()
   def to_string(%__MODULE__{} = pubkey) do
