@@ -4,6 +4,7 @@ defmodule Aldea.Encoding do
   various encoding formats used in Aldea.
   """
   alias Aldea.Serializable
+  import Bitwise, only: [bor: 2, bsl: 2, bsr: 2]
 
   @max_int64 18_446_744_073_709_551_615
 
@@ -145,6 +146,38 @@ defmodule Aldea.Encoding do
     with {:ok, item, data} <- Serializable.parse(struct(mod), data) do
       varint_parse_structs(data, num, mod, [item | result])
     end
+  end
+
+  @doc """
+  TODO
+  """
+  @spec uleb_decode(binary()) :: {:ok, non_neg_integer()} | {:error, term()}
+  def uleb_decode(data)  do
+    with {:ok, int, _rest} <- uleb_parse(data), do: {:ok, int}
+  end
+
+  @doc """
+  TODO
+  """
+  @spec uleb_encode(non_neg_integer()) :: binary()
+  def uleb_encode(int) when int < 128, do: <<int>>
+  def uleb_encode(int), do: <<1::1, int::7, uleb_encode(bsr(int, 7))::binary>>
+
+  @doc """
+  TODO
+  """
+  @spec uleb_parse(binary()) :: {:ok, non_neg_integer(), binary()} | {:error, term()}
+  def uleb_parse(data) when is_binary(data), do: uleb_parse(data, 0, 0)
+
+  @spec uleb_parse(binary(), non_neg_integer(), non_neg_integer()) ::
+    {:ok, non_neg_integer(), binary()} |
+    {:error, term()}
+  defp uleb_parse(<<0::1, byte::7, rest::binary>>, shift, result) do
+    {:ok, bor(result, bsl(byte, shift)), rest}
+  end
+
+  defp uleb_parse(<<1::1, byte::7, rest::binary>>, shift, result) do
+    uleb_parse(rest, shift + 7, bor(result, bsl(byte, shift)))
   end
 
 end
