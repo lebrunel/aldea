@@ -23,8 +23,10 @@ defmodule Aldea.MixProject do
     [
       {:b3, "~> 0.1"},
       {:cbor, "~> 1.0"},
-      {:eddy, "~> 1.0"},
+      {:eddy, path: "/Users/aaron/Dev/chronos/eddy"},
       {:ex_bech32, "~> 0.4"},
+      {:jason, "~> 1.4"},
+      {:mnemonic, "~> 0.3", only: :test},
     ]
   end
 end

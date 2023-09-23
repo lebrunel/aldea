@@ -4,10 +4,11 @@ defmodule Aldea.Instruction do
   instruction consists of an `OpCode` byte and a number of attributes, depending
   on the `OpCode`.
   """
-  alias Aldea.Serializable
+  alias Aldea.{
+    BCS,
+    Encodable,
+  }
   import Aldea.Encoding, only: [
-    cbor_seq_decode: 1,
-    cbor_seq_encode: 1,
     varint_encode: 1,
     varint_parse_data: 1,
   ]
@@ -19,10 +20,10 @@ defmodule Aldea.Instruction do
     %__MODULE__{op: :IMPORT, attrs: %{pkg_id: <<_::256>>}} |
     %__MODULE__{op: :LOAD, attrs: %{output_id: <<_::256>>}} |
     %__MODULE__{op: :LOADBYORIGIN, attrs: %{origin: <<_::272>>}} |
-    %__MODULE__{op: :NEW, attrs: %{idx: idx(), export_idx: idx(), args: list(any())}} |
-    %__MODULE__{op: :CALL, attrs: %{idx: idx(), method_idx: idx(), args: list(any())}} |
-    %__MODULE__{op: :EXEC, attrs: %{idx: idx(), export_idx: idx(), method_idx: idx(), args: list(any())}} |
-    %__MODULE__{op: :EXECFN, attrs: %{idx: idx(), export_idx: idx(), args: list(any())}} |
+    %__MODULE__{op: :NEW, attrs: %{idx: idx(), export_idx: idx(), args_data: binary()}} |
+    %__MODULE__{op: :CALL, attrs: %{idx: idx(), method_idx: idx(), args_data: binary()}} |
+    %__MODULE__{op: :EXEC, attrs: %{idx: idx(), export_idx: idx(), method_idx: idx(), args_data: binary()}} |
+    %__MODULE__{op: :EXECFN, attrs: %{idx: idx(), export_idx: idx(), args_data: binary()}} |
     %__MODULE__{op: :FUND, attrs: %{idx: idx()}} |
     %__MODULE__{op: :LOCK, attrs: %{idx: idx(), pubkey_hash: <<_::160>>}} |
     %__MODULE__{op: :DEPLOY, attrs: %{entry: list(String.t()), code: pkg()}} |
@@ -44,7 +45,7 @@ defmodule Aldea.Instruction do
     NEW: 0xB1,
     CALL: 0xB2,
     EXEC: 0xB3,
-    EXECFUNC: 0xB4,
+    EXECFN: 0xB4,
     # Output
     FUND: 0xC1,
     LOCK: 0xC2,
@@ -78,25 +79,25 @@ defmodule Aldea.Instruction do
   def to_bin(%__MODULE__{} = instruction), do: Serializable.serialize(instruction)
 
 
-  defimpl Serializable do
+  defimpl Encodable do
     alias Aldea.Instruction
 
     @impl true
-    def parse(instruction, <<op_code, data::binary>>) do
-      with {:ok, op} <- find_op_by_code(op_code),
-           {:ok, data, rest} <- varint_parse_data(data),
-           attrs when is_map(attrs) <- parse_attrs(op, data)
+    def read(instruction, bin) do
+      with {:ok, op_code, bin} <- BCS.read(bin, :u8),
+           {:ok, op} <- find_op_by_code(op_code),
+           {:ok, attrs_bin, rest} <- BCS.read_bin(bin),
+           attrs when is_map(attrs) <- parse_attrs(op, attrs_bin)
       do
         {:ok, struct(instruction, op: op, attrs: attrs), rest}
       end
     end
 
     @impl true
-    def serialize(%{op: op, attrs: attrs}) do
-      op_code = Instruction.op_codes()[op]
-      attrs_bin = serialize_attrs(op, attrs)
-      attrs_len = varint_encode(byte_size(attrs_bin))
-      <<op_code, attrs_len::binary, attrs_bin::binary>>
+    def write(%{op: op, attrs: attrs}, bin) do
+      bin
+      |> BCS.write(:u8, Instruction.op_codes()[op])
+      |> BCS.write_bin(serialize_attrs(op, attrs))
     end
 
     # Finds the op code by the byte.
@@ -114,26 +115,14 @@ defmodule Aldea.Instruction do
     defp parse_attrs(:IMPORT, pkg_id), do: %{pkg_id: pkg_id}
     defp parse_attrs(:LOAD, output_id), do: %{output_id: output_id}
     defp parse_attrs(:LOADBYORIGIN, origin), do: %{origin: origin}
-    defp parse_attrs(:NEW, <<idx::little-16, export_idx::little-16, args::binary>>) do
-      with {:ok, args} <- cbor_seq_decode(args) do
-        %{idx: idx, export_idx: export_idx, args: args}
-      end
-    end
-    defp parse_attrs(:CALL, <<idx::little-16, method_idx::little-16, args::binary>>) do
-      with {:ok, args} <- cbor_seq_decode(args) do
-        %{idx: idx, method_idx: method_idx, args: args}
-      end
-    end
-    defp parse_attrs(:EXEC, <<idx::little-16, export_idx::little-16, method_idx::little-16, args::binary>>) do
-      with {:ok, args} <- cbor_seq_decode(args) do
-        %{idx: idx, export_idx: export_idx, method_idx: method_idx, args: args}
-      end
-    end
-    defp parse_attrs(:EXECFN, <<idx::little-16, export_idx::little-16, args::binary>>) do
-      with {:ok, args} <- cbor_seq_decode(args) do
-        %{idx: idx, export_idx: export_idx, args: args}
-      end
-    end
+    defp parse_attrs(:NEW, <<idx::little-16, export_idx::little-16, args_data::binary>>),
+      do: %{idx: idx, export_idx: export_idx, args_data: args_data}
+    defp parse_attrs(:CALL, <<idx::little-16, method_idx::little-16, args_data::binary>>),
+      do: %{idx: idx, method_idx: method_idx, args_data: args_data}
+    defp parse_attrs(:EXEC, <<idx::little-16, export_idx::little-16, method_idx::little-16, args_data::binary>>),
+      do: %{idx: idx, export_idx: export_idx, method_idx: method_idx, args_data: args_data}
+    defp parse_attrs(:EXECFN, <<idx::little-16, export_idx::little-16, args_data::binary>>),
+      do: %{idx: idx, export_idx: export_idx, args_data: args_data}
     defp parse_attrs(:FUND, <<idx::little-16>>), do: %{idx: idx}
     defp parse_attrs(:LOCK, <<idx::little-16, pubkey_hash::binary-size(20)>>),
       do: %{idx: idx, pubkey_hash: pubkey_hash}

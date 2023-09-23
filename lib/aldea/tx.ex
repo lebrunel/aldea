@@ -5,14 +5,13 @@ defmodule Aldea.Tx do
   transaction.
   """
   alias Aldea.{
+    BCS,
+    Encodable,
     Instruction,
-    Serializable,
   }
   import Aldea.Encoding, only: [
     bin_decode: 2,
     bin_encode: 2,
-    varint_encode: 1,
-    varint_parse_structs: 2,
   ]
 
   defstruct version: 1, instructions: []
@@ -79,21 +78,30 @@ defmodule Aldea.Tx do
   def to_hex(%__MODULE__{} = tx), do: to_bin(tx) |> bin_encode(:hex)
 
 
-  defimpl Serializable do
+  defimpl Encodable do
     @impl true
-    def parse(tx, <<version::little-16, data::binary>>) do
-      with {:ok, instructions, rest} <- varint_parse_structs(data, Instruction) do
+    def read(tx, data) do
+      with {:ok, version, data} <- BCS.read(data, :u16),
+           {:ok, instructions, rest} <- BCS.read_seq(data, &read_instruction/1)
+      do
         {:ok, struct(tx, [version: version, instructions: instructions]), rest}
       end
     end
 
+    # TODO
+    @spec read_instruction(binary()) :: {:ok, Instruction.t(), binary()} | {:error, term()}
+    defp read_instruction(bin), do: Serializable.parse(%Instruction{}, bin)
+
     @impl true
-    def serialize(tx) do
-      data = <<tx.version::little-16>> <> varint_encode(length(tx.instructions))
-      Enum.reduce(tx.instructions, data, fn inst, bin ->
-        bin <> Serializable.serialize(inst)
-      end)
+    def write(%{version: version, instructions: instructions}, bin) do
+      bin
+      |> BCS.write(:u16, version)
+      |> BCS.write_seq(instructions, &write_instruction/2)
     end
+
+    # TODO
+    @spec write_instruction(Instruction.t(), binary()) :: binary()
+    defp write_instruction(inst, bin), do: bin <> Serializable.serialize(inst)
   end
 
 end
