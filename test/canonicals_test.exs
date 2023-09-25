@@ -1,12 +1,18 @@
 defmodule CanonicalsTest do
   use ExUnit.Case
   alias Aldea.{
-    #Address,
+    Address,
     #HDPrivKey,
     #HDPubKey,
-    #PrivKey,
-    #PubKey,
+    PrivKey,
+    PubKey,
     Tx,
+  }
+
+  @keys %{
+    privkey: "asec1f40sdqzmph3ec7uce9lu97zc2yadh7hs6ut2j37pryjf0zjgp45srd6f6z",
+    pubkey: "apub1ae6x0x0jrzw2z0dtk73knewry8f04sduw2g5gzquu4puvqfrl7jswd84n8",
+    address: "addr1x8xyadtsgfdrjw2dw6qzh269eqjtf5q5gj7zwm",
   }
 
   @tx %{
@@ -29,6 +35,15 @@ defmodule CanonicalsTest do
       {:SIGNTO,       Base.decode16!("db7134476827db2c4c096b25e3fa67e2759e295108cb676f455e354d4c984ede577daeedc097296e6b894e5f6581234be085264262a30867aff04980000ab502", case: :lower), pubkey: Base.decode16!("a19bb50358e253e3ded9910ce69088a327f701a4c85b7f444b6f4f6e63bbb961", case: :lower)},
     ]
   }
+
+  test "Canonical priv and pub key and address serialisation" do
+    assert {:ok, privkey} = PrivKey.from_string(@keys.privkey)
+    assert {:ok, pubkey} = PubKey.from_string(@keys.pubkey)
+
+    assert PubKey.from_privkey(privkey) |> PubKey.to_string() == @keys.pubkey
+    assert PubKey.from_privkey(privkey) |> Address.from_pubkey() |> Address.to_string() == @keys.address
+    assert Address.from_pubkey(pubkey) |> Address.to_string() == @keys.address
+  end
 
   test "Kitchen sink serialisation" do
     assert {:ok, tx} = Tx.from_hex(@tx.rawtx)
