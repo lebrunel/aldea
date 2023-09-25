@@ -5,6 +5,8 @@ defmodule Aldea.BCS.Encoder do
   alias Aldea.BCS
   import Aldea.Encoding, only: [uleb_encode: 1]
 
+  @type writer() :: (binary(), BCS.elixir_type() -> binary())
+
   @doc """
   TODO
   """
@@ -53,30 +55,33 @@ defmodule Aldea.BCS.Encoder do
   # binary strings
   def write(data, bin, :bin) when is_binary(data) and is_binary(bin),
     do: <<write(data, byte_size(bin), :uleb)::binary, bin::binary>>
+  def write(data, bin, {:bin, :fixed}) when is_binary(data) and is_binary(bin),
+    do: write(data, bin, {:bin, byte_size(bin)})
   def write(data, bin, {:bin, n})
-    when is_binary(data) and is_integer(n) and is_binary(bin),
+    when is_binary(data) and is_binary(bin)
+    and is_integer(n) and n == byte_size(bin),
     do: <<data::binary, bin::binary>>
 
   # sequences
   def write(data, list, {:seq, t}) when is_binary(data) and is_list(list),
-    do: write_seq(data, list, & write(&2, &1, t))
+    do: write_seq(data, list, & write(&1, &2, t))
   def write(data, list, {:seq, n, t})
     when is_binary(data) and is_list(list)
     and is_integer(n) and n == length(list),
-    do: write_seq_fixed(data, list, & write(&2, &1, t))
+    do: write_seq_fixed(data, list, & write(&1, &2, t))
 
   # maps
   def write(data, pairs, {:map, t}) when is_binary(data) and is_map(pairs),
     do: write(data, Enum.into(pairs, []), {:map, t})
   def write(data, pairs, {:map, t}) when is_binary(data) and is_list(pairs),
-    do: write_seq(data, pairs, & map_writer(&2, &1, t))
+    do: write_seq(data, pairs, & map_writer(&1, &2, t))
   def write(data, pairs, {:map, n, t})
     when is_binary(data) and is_map(pairs),
     do: write(data, Enum.into(pairs, []), {:map, n, t})
   def write(data, pairs, {:map, n, t})
     when is_binary(data) and is_list(pairs)
     and is_integer(n) and n == length(pairs),
-    do: write_seq_fixed(data, pairs, & map_writer(&2, &1, t))
+    do: write_seq_fixed(data, pairs, & map_writer(&1, &2, t))
 
   # options
   def write(data, nil, {:option, _t}), do: write(data, false, :bool)
@@ -99,7 +104,9 @@ defmodule Aldea.BCS.Encoder do
     when is_binary(data) and is_list(pairs) and is_list(vals),
     do: write_each(data, Keyword.values(vals), Keyword.values(pairs))
 
-
+  # modules
+  def write(data, val, {:mod, mod}) when is_binary(data) and is_atom(mod),
+    do: apply(mod, :bcs_write, [data, val])
 
   @doc """
   TODO
@@ -116,7 +123,7 @@ defmodule Aldea.BCS.Encoder do
   @spec write_seq(
     binary(),
     list(BCS.elixir_type()),
-    (BCS.elixir_type(), binary() -> binary())
+    writer()
   ) :: binary()
   def write_seq(data, items, writer)
     when is_binary(data)
@@ -130,13 +137,13 @@ defmodule Aldea.BCS.Encoder do
   @spec write_seq_fixed(
     binary(),
     list(BCS.elixir_type()),
-    (BCS.elixir_type(), binary() -> binary())
+    writer()
   ) :: binary()
   def write_seq_fixed(data, items, writer)
     when is_binary(data)
     and is_list(items)
     and is_function(writer),
-    do: Enum.reduce(items, data, writer)
+    do: Enum.reduce(items, data, & writer.(&2, &1))
 
 
   # todo

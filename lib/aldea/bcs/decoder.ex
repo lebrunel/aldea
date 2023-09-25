@@ -47,6 +47,8 @@ defmodule Aldea.BCS.Decoder do
   def read(data, :bin) when is_binary(data) do
     with {:ok, n, rest} <- read(data, :uleb), do: read(rest, {:bin, n})
   end
+  def read(data, {:bin, :fixed}) when is_binary(data),
+    do: read(data, {:bin, byte_size(data)})
   def read(data, {:bin, n}) when is_binary(data) and is_integer(n) do
     case data do
       <<data::binary-size(n), rest::binary>> -> {:ok, data, rest}
@@ -57,6 +59,7 @@ defmodule Aldea.BCS.Decoder do
   # sequences
   def read(data, {:seq, t}) when is_binary(data),
     do: read_seq(data, & read(&1, t))
+
   def read(data, {:seq, n, t}) when is_binary(data) and is_integer(n),
     do: read_seq_fixed(data, n, & read(&1, t))
 
@@ -85,6 +88,10 @@ defmodule Aldea.BCS.Decoder do
     end
   end
 
+  # modules
+  def read(data, {:mod, mod}) when is_binary(data) and is_atom(mod),
+    do: apply(mod, :bcs_read, [data])
+
   def read(_data, _type), do: {:error, :bcs_read}
 
   @doc """
@@ -110,7 +117,7 @@ defmodule Aldea.BCS.Decoder do
   """
   @spec read_seq(
     binary(),
-    (binary() -> {:ok, BCS.elixir_type(), binary()})
+    (binary() -> BCS.read_result())
   ) :: BCS.read_result()
   def read_seq(data, reader) when is_binary(data) and is_function(reader) do
     with {:ok, n, rest} <- read(data, :uleb), do: read_seq_fixed(rest, n, reader)
@@ -122,7 +129,7 @@ defmodule Aldea.BCS.Decoder do
   @spec read_seq_fixed(
     binary(),
     non_neg_integer(),
-    (binary() -> {:ok, BCS.elixir_type(), binary()})
+    (binary() -> BCS.read_result())
   ) :: BCS.read_result()
   def read_seq_fixed(data, n, reader)
     when is_binary(data) and is_integer(n) and is_function(reader),
@@ -133,7 +140,7 @@ defmodule Aldea.BCS.Decoder do
     binary(),
     non_neg_integer(),
     list(BCS.elixir_type()),
-    (binary() -> {:ok, BCS.elixir_type(), binary()})
+    (binary() -> BCS.read_result())
   ) :: BCS.read_result()
   defp read_seq_fixed(data, 0, vals, _reader), do: {:ok, Enum.reverse(vals), data}
   defp read_seq_fixed(data, len, vals, reader) do

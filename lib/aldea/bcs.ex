@@ -39,10 +39,37 @@ defmodule Aldea.BCS do
   defdelegate read_seq(data, reader), to: Decoder
   defdelegate read_seq_fixed(data, len, reader), to: Decoder
 
-  defdelegate encode(type, val), to: Encoder
-  defdelegate write(data, type, val), to: Encoder
-  defdelegate write_each(data, types, vals), to: Encoder
+  defdelegate encode(val, type), to: Encoder
+  defdelegate write(data, val, type), to: Encoder
+  defdelegate write_each(data, vals, types), to: Encoder
   defdelegate write_seq(data, vals, writer), to: Encoder
   defdelegate write_seq_fixed(data, vals, writer), to: Encoder
+
+  @doc """
+  TODO
+  """
+  defmacro defschema(schema \\ []) do
+    quote location: :keep do
+      @behaviour Aldea.BCS.Encodable
+
+      if length(unquote(schema)) > 0 do
+        @impl Aldea.BCS.Encodable
+        def bcs_read(data) when is_binary(data) do
+          with {:ok, vals, rest} <- Aldea.BCS.read_each(data, Keyword.values(unquote(schema))) do
+            params = Enum.zip([Keyword.keys(unquote(schema)), vals])
+            {:ok, struct(__MODULE__, params), rest}
+          end
+        end
+
+        @impl Aldea.BCS.Encodable
+        def bcs_write(data, val) when is_binary(data) do
+          vals = Keyword.keys(unquote(schema)) |> Enum.map(& Map.get(val, &1))
+          Aldea.BCS.write_each(data, vals, Keyword.values(unquote(schema)))
+        end
+      end
+
+      defoverridable bcs_read: 1, bcs_write: 2
+    end
+  end
 
 end
