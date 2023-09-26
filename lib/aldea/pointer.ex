@@ -10,9 +10,12 @@ defmodule Aldea.Pointer do
 
       3b2af88dad7f1847f5b333852b71ac6fd2ae519ba2d359e8ce07b071aad30e80_1
   """
+  alias Aldea.BCS
   import Aldea.Encoding, only: [bin_decode: 2, bin_encode: 2]
+  require BCS
 
   defstruct [:id, :idx]
+  BCS.defschema id: {:bin, 32}, idx: :u16
 
   @typedoc "Pointer"
   @type t() :: %__MODULE__{
@@ -25,11 +28,7 @@ defmodule Aldea.Pointer do
   """
   @spec from_bin(binary()) :: {:ok, t()} | {:error, term()}
   def from_bin(bin) do
-    with <<id::binary-32, idx::little-16>> <- bin do
-      {:ok, struct(__MODULE__, id: id, idx: idx)}
-    else
-      _ -> {:error, {:invalid_length, byte_size(bin)}}
-    end
+    with {:ok, pointer, <<>>} <- bcs_read(bin), do: {:ok, pointer}
   end
 
   @doc """
@@ -37,9 +36,7 @@ defmodule Aldea.Pointer do
   """
   @spec from_hex(String.t()) :: {:ok, t()} | {:error, term()}
   def from_hex(hex) when is_binary(hex) do
-    with {:ok, bin} <- bin_decode(hex, :hex) do
-      from_bin(bin)
-    end
+    with {:ok, bin} <- bin_decode(hex, :hex), do: from_bin(bin)
   end
 
   @doc """
@@ -66,7 +63,7 @@ defmodule Aldea.Pointer do
   Returns the Pointer as a 34-byte binary.
   """
   @spec to_bin(t()) :: binary()
-  def to_bin(%__MODULE__{id: id, idx: idx}), do: <<id::binary, idx::little-16>>
+  def to_bin(%__MODULE__{} = ptr), do: bcs_write(<<>>, ptr)
 
   @doc """
   Returns the Pointer as a hex-encoded string.

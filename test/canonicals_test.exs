@@ -1,13 +1,19 @@
 defmodule CanonicalsTest do
   use ExUnit.Case
+  require Record
   alias Aldea.{
+    ABI,
     Address,
     #HDPrivKey,
     #HDPubKey,
+    Package,
     PrivKey,
     PubKey,
     Tx,
   }
+
+  @pkg_abi with {:ok, abi} <- ABI.from_json(File.read!("test/support/pkg.abi.json")), do: abi
+  @coin_abi with {:ok, abi} <- ABI.from_json(File.read!("test/support/coin.abi.json")), do: abi
 
   @keys %{
     privkey: "asec1f40sdqzmph3ec7uce9lu97zc2yadh7hs6ut2j37pryjf0zjgp45srd6f6z",
@@ -22,17 +28,17 @@ defmodule CanonicalsTest do
       {:IMPORT,       Base.decode16!("a0b07c4143ae6f105ea79cff5d21d2d1cd09351cf66e41c3e43bfb3bddb1a701", case: :lower)},
       {:LOAD,         Base.decode16!("df4cf424923ad248766251066fa4a408930faf94fff66c77657e79f604d3120d", case: :lower)},
       {:LOADBYORIGIN, Base.decode16!("675d72e2d567cbe2cb9ef3230cbc4c85e42bcd56ba537f6b65a51b9c6c8552810100", case: :lower)},
-      {:NEW,          0, 0, ["foo"]},
-      {:CALL,         1, 1, [700, Base.decode16!("f8be00b23c9c1c30720e862d00082121d83c4ff3", case: :lower)]},
-      {:CALL,         2, 1, ["bar"]},
-      {:EXEC,         0, 0, 2, ["mum"]},
-      {:EXECFN,       0, 1, ["dad"]},
+      {:NEW,          0, 0, ABI.bcs_encode(@pkg_abi, "Badge_constructor", ["foo"])},
+      {:CALL,         1, 1, ABI.bcs_encode(@coin_abi, "Coin$send", [700, Base.decode16!("f8be00b23c9c1c30720e862d00082121d83c4ff3", case: :lower)])},
+      {:CALL,         2, 1, ABI.bcs_encode(@pkg_abi, "Badge$rename", ["bar"])},
+      {:EXEC,         0, 0, 2, ABI.bcs_encode(@pkg_abi, "Badge_helloWorld", ["mum"])},
+      {:EXECFN,       0, 1, ABI.bcs_encode(@pkg_abi, "helloWorld", ["dad"])},
       {:FUND,         1},
       {:LOCK,         2, Base.decode16!("f8be00b23c9c1c30720e862d00082121d83c4ff3", case: :lower)},
       {:LOCK,         3, Base.decode16!("f8be00b23c9c1c30720e862d00082121d83c4ff3", case: :lower)},
-      {:DEPLOY,       %{entry: ["index.ts"], code: %{"index.ts" => "export function helloWorld(msg: string): string { return `Hello ${msg}!` }"}}},
-      {:SIGN,         Base.decode16!("dcec284f6257490225aec9762c2b4f4683841fd76a8c67407ce58058019688f27c51945b3055e3b9c652bfddc6b2c696a9130b8159de1f9f1de31ac17693ff0f", case: :lower), pubkey: Base.decode16!("a19bb50358e253e3ded9910ce69088a327f701a4c85b7f444b6f4f6e63bbb961", case: :lower)},
-      {:SIGNTO,       Base.decode16!("db7134476827db2c4c096b25e3fa67e2759e295108cb676f455e354d4c984ede577daeedc097296e6b894e5f6581234be085264262a30867aff04980000ab502", case: :lower), pubkey: Base.decode16!("a19bb50358e253e3ded9910ce69088a327f701a4c85b7f444b6f4f6e63bbb961", case: :lower)},
+      {:DEPLOY,       Package.to_bin(%Package{entry: ["index.ts"], code: %{"index.ts" => "export function helloWorld(msg: string): string { return `Hello ${msg}!` }"}})},
+      {:SIGN,         Base.decode16!("a19bb50358e253e3ded9910ce69088a327f701a4c85b7f444b6f4f6e63bbb961", case: :lower)},
+      {:SIGNTO,       Base.decode16!("a19bb50358e253e3ded9910ce69088a327f701a4c85b7f444b6f4f6e63bbb961", case: :lower)},
     ]
   }
 
@@ -48,11 +54,21 @@ defmodule CanonicalsTest do
   test "Kitchen sink serialisation" do
     assert {:ok, tx} = Tx.from_hex(@tx.rawtx)
     assert length(tx.instructions) == 14
-    #for {inst, {op, attrs}} <- Enum.zip(tx.instructions, @tx.instructions) do
-    #  assert inst.op == op
-    #  assert inst.attrs == attrs
-    #end
+    for {a, b} <- Enum.zip(tx.instructions, @tx.instructions) do
+      if elem(a, 0) in [:SIGN, :SIGNTO] do
+        assert elem(a, 2) == elem(b, 1)
+      else
+        assert a == b
+      end
+    end
     assert Tx.to_hex(tx) == @tx.rawtx
+    #IO.inspect Enum.at(tx.instructions, 11), limit: :infinity
+    IO.inspect Package.from_bin(<<1, 8, 105, 110, 100, 101, 120, 46, 116, 115, 1, 8, 105, 110, 100, 101, 120,
+    46, 116, 115, 74, 101, 120, 112, 111, 114, 116, 32, 102, 117, 110, 99, 116,
+    105, 111, 110, 32, 104, 101, 108, 108, 111, 87, 111, 114, 108, 100, 40, 109,
+    115, 103, 58, 32, 115, 116, 114, 105, 110, 103, 41, 58, 32, 115, 116, 114,
+    105, 110, 103, 32, 123, 32, 114, 101, 116, 117, 114, 110, 32, 96, 72, 101,
+    108, 108, 111, 32, 36, 123, 109, 115, 103, 125, 33, 96, 32, 125>>)
   end
 
 end

@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "exports": [
+    {
+      "kind": 0,
+      "code": {
+        "name": "Coin",
+        "extends": "Jig",
+        "implements": [],
+        "fields": [
+          {
+            "kind": 0,
+            "name": "motos",
+            "type": {
+              "name": "u64",
+              "args": []
+            }
+          }
+        ],
+        "methods": [
+          {
+            "kind": 1,
+            "name": "constructor",
+            "args": [
+              {
+                "name": "amount",
+                "type": {
+                  "name": "u64",
+                  "args": []
+                }
+              }
+            ],
+            "rtype": null
+          },
+          {
+            "kind": 2,
+            "name": "send",
+            "args": [
+              {
+                "name": "amount",
+                "type": {
+                  "name": "u64",
+                  "args": []
+                }
+              },
+              {
+                "name": "newOwner",
+                "type": {
+                  "name": "Uint8Array",
+                  "args": []
+                }
+              }
+            ],
+            "rtype": {
+              "name": "Coin",
+              "args": []
+            }
+          },
+          {
+            "kind": 2,
+            "name": "combine",
+            "args": [
+              {
+                "name": "coins",
+                "type": {
+                  "name": "Array",
+                  "args": [
+                    {
+                      "name": "Coin",
+                      "args": []
+                    }
+                  ]
+                }
+              }
+            ],
+            "rtype": {
+              "name": "Coin",
+              "args": []
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "imports": [],
+  "objects": [],
+  "typeIds": [
+    {
+      "id": 0,
+      "name": "ArrayBuffer"
+    },
+    {
+      "id": 3,
+      "name": "Coin"
+    },
+    {
+      "id": 5,
+      "name": "Jig"
+    },
+    {
+      "id": 6,
+      "name": "Output"
+    },
+    {
+      "id": 7,
+      "name": "Lock"
+    },
+    {
+      "id": 8,
+      "name": "JigInitParams"
+    },
+    {
+      "id": 9,
+      "name": "Array<Coin>"
+    }
+  ]
+}
