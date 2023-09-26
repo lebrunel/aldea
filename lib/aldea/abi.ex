@@ -96,11 +96,11 @@ defmodule Aldea.ABI do
     interface: 2,
   }
 
-  @field_kind %{
-    public: 0,
-    private: 1,
-    protected: 2,
-  }
+  #@field_kind %{
+  #  public: 0,
+  #  private: 1,
+  #  protected: 2,
+  #}
 
   @method_kind %{
     static: 0,

@@ -1,6 +1,5 @@
 defmodule Aldea.ABITest do
   use ExUnit.Case
-  alias Aldea.ABI
   doctest Aldea.ABI
 
   #test "foo" do
