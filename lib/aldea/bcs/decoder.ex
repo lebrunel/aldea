@@ -64,10 +64,14 @@ defmodule Aldea.BCS.Decoder do
     do: read_seq_fixed(data, n, & read(&1, t))
 
   # maps
-  def read(data, {:map, {k, v}}) when is_binary(data),
-    do: read_seq(data, & map_reader(&1, k, v))
-  def read(data, {:map, n, {k, v}}) when is_binary(data) and is_integer(n),
-    do: read_seq_fixed(data, n, & map_reader(&1, k, v))
+  def read(data, {:map, {k, v}}) when is_binary(data) do
+    with {:ok, val, rest} <- read_seq(data, & map_reader(&1, k, v)),
+      do: {:ok, Enum.into(val, %{}), rest}
+  end
+  def read(data, {:map, n, {k, v}}) when is_binary(data) and is_integer(n) do
+    with {:ok, val, rest} <- read_seq_fixed(data, n, & map_reader(&1, k, v)),
+      do: {:ok, Enum.into(val, %{}), rest}
+  end
 
   # options
   def read(data, {:option, t}) when is_binary(data) do
@@ -84,7 +88,8 @@ defmodule Aldea.BCS.Decoder do
   # struct
   def read(data, {:struct, pairs}) when is_binary(data) and is_list(pairs) do
     with {:ok, vals, rest} <- read_each(data, Keyword.values(pairs)) do
-      {:ok, List.zip([Keyword.keys(pairs), vals]), rest}
+      val = List.zip([Keyword.keys(pairs), vals]) |> Enum.into(%{})
+      {:ok, val, rest}
     end
   end
 

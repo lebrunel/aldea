@@ -2,7 +2,9 @@ defmodule Aldea.ABI do
   @moduledoc """
   TODO
   """
+  alias __MODULE__.Schema
   alias Aldea.{BCS, Pointer}
+  require BCS
 
   @derive Jason.Encoder
 
@@ -11,6 +13,8 @@ defmodule Aldea.ABI do
             imports: [],
             objects: [],
             type_ids: []
+
+  BCS.defschema Schema.init
 
   @type t() :: %__MODULE__{
     version: non_neg_integer(),
@@ -113,9 +117,9 @@ defmodule Aldea.ABI do
   @doc """
   TODO
   """
-  @spec bcs_decode(t(), String.t(), binary()) ::
+  @spec decode(t(), String.t(), binary()) ::
     {:ok, list(BCS.elixir_type())} | {:error, term()}
-  def bcs_decode(%__MODULE__{} = abi, key, data)
+  def decode(%__MODULE__{} = abi, key, data)
     when is_binary(key) and is_binary(data)
   do
     case find_node(abi, key) do
@@ -146,8 +150,8 @@ defmodule Aldea.ABI do
   @doc """
   TODO
   """
-  @spec bcs_encode(t(), String.t(), list(BCS.elixir_type())) :: binary()
-  def bcs_encode(%__MODULE__{} = abi, key, vals)
+  @spec encode(t(), String.t(), list(BCS.elixir_type())) :: binary()
+  def encode(%__MODULE__{} = abi, key, vals)
     when is_binary(key) and is_list(vals)
   do
     case find_node(abi, key) do
@@ -199,6 +203,14 @@ defmodule Aldea.ABI do
   @doc """
   TODO
   """
+  @spec from_bin(binary()) :: {:ok, t()} | {:error, term()}
+  def from_bin(data) when is_binary(data) do
+    with {:ok, abi, _rest} <- bcs_read(data), do: {:ok, abi}
+  end
+
+  @doc """
+  TODO
+  """
   @spec from_json(String.t()) :: {:ok, t()} | {:error, term()}
   def from_json(data) when is_binary(data) do
     with {:ok, abi} <- Jason.decode(data) do
@@ -209,6 +221,12 @@ defmodule Aldea.ABI do
       end))}
     end
   end
+
+  @doc """
+  TODO
+  """
+  @spec to_bin(t()) :: binary()
+  def to_bin(%__MODULE__{} = abi), do: bcs_write(<<>>, abi)
 
   @doc """
   TODO

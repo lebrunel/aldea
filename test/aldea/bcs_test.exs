@@ -5,12 +5,10 @@ defmodule Aldea.BCSTest do
 
   @test_data %{
     seq: [100, 200, 300, 400],
-    # we can encode an elixir map, but read/2 aways returns a list of key/vals
-    map: [{1, 100}, {2, 200}, {3, 300}, {4, 400}],
+    map: %{1 => 100, 2 => 200, 3 => 300, 4 => 400},
     # we can encode an elixir tuple, but read/2 aways returns a list
     tuple: [180, "hello", 30123],
-    # we can encode an elixir struct, but read/2 aways returns a list of key/vals
-    struct: [{:foo, 500000}, {:bar, "hello"}, {:baz, [1,2,3,4]}]
+    struct: %{foo: 500000, bar: "hello", baz: [1,2,3,4]}
   }
 
   @test_types %{

@@ -57,7 +57,11 @@ defmodule Aldea.BCS do
         def bcs_read(data) when is_binary(data) do
           with {:ok, vals, rest} <- Aldea.BCS.read_each(data, Keyword.values(unquote(schema))) do
             params = Enum.zip([Keyword.keys(unquote(schema)), vals])
-            {:ok, struct(__MODULE__, params), rest}
+            case Kernel.function_exported?(__MODULE__, :__struct__, 0)  do
+              true -> {:ok, struct(__MODULE__, params), rest}
+              false -> {:ok, Enum.into(params, %{}), rest}
+            end
+
           end
         end
 
