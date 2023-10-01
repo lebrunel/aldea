@@ -44,7 +44,7 @@ defmodule Aldea.Encoding do
   def bin_encode(data, _), do: data
 
   @doc """
-  TODO
+  Decodes the given binary into an integer using ULEB.
   """
   @spec uleb_decode(binary()) :: {:ok, non_neg_integer()} | {:error, term()}
   def uleb_decode(data)  do
@@ -52,14 +52,14 @@ defmodule Aldea.Encoding do
   end
 
   @doc """
-  TODO
+  Encodes the given integer using ULEB.
   """
   @spec uleb_encode(non_neg_integer()) :: binary()
   def uleb_encode(int) when int < 128, do: <<int>>
   def uleb_encode(int), do: <<1::1, int::7, uleb_encode(bsr(int, 7))::binary>>
 
   @doc """
-  TODO
+  Parses an integer from the given binary using ULEB.
   """
   @spec uleb_parse(binary()) :: {:ok, non_neg_integer(), binary()} | {:error, term()}
   def uleb_parse(data) when is_binary(data), do: uleb_parse(data, 0, 0)

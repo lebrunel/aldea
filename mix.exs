@@ -24,6 +24,7 @@ defmodule Aldea.MixProject do
       {:b3, "~> 0.1"},
       {:eddy, "~> 1.0"},
       {:ex_bech32, "~> 0.5"},
+      {:ex_doc, "~> 0.30"},
       {:jason, "~> 1.4"},
       {:recase, "~> 0.7"},
     ]

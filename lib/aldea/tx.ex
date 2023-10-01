@@ -88,7 +88,7 @@ defmodule Aldea.Tx do
   def to_hex(%__MODULE__{} = tx), do: to_bin(tx) |> bin_encode(:hex)
 
   @doc """
-  TODO
+  Verifies all SIGN and SIGNTO instructions in the Tx.
   """
   @spec verify(t()) :: boolean()
   def verify(%__MODULE__{} = tx) do
