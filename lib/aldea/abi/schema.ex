@@ -18,7 +18,7 @@ defmodule Aldea.ABI.Schema do
 
   def class_node, do: {:struct, [
     name: :bin,
-    extends: {:option, :bin},
+    extends: :bin,
     implements: {:seq, :bin},
     fields: {:seq, field_node()},
     methods: {:seq, method_node()},
@@ -50,7 +50,7 @@ defmodule Aldea.ABI.Schema do
 
   def interface_node, do: {:struct, [
     name: :bin,
-    extends: {:option, :bin},
+    extends: {:seq, :bin},
     fields: {:seq, field_node()},
     methods: {:seq, method_node()},
   ]}

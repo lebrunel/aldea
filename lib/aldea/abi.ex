@@ -6,8 +6,6 @@ defmodule Aldea.ABI do
   alias Aldea.{BCS, Pointer}
   require BCS
 
-  @derive Jason.Encoder
-
   defstruct version: 1,
             exports: [],
             imports: [],

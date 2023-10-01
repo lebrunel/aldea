@@ -1,13 +1,9 @@
 %{
   "b3": {:hex, :b3, "0.1.0", "aeddee919623b34877eaf572e37d1851fcfa70ee9ed872ed20a50c85646d601c", [:mix], [], "hexpm", "9a65040070032f4be28ef154f320c36746d383638853056ea7cfbc9a187109ec"},
-  "bip0173": {:git, "https://github.com/stampery/elixir-bip0173.git", "3b9ac284a6f64905dca54aafdc397aaa2ff865ea", []},
   "castore": {:hex, :castore, "1.0.3", "7130ba6d24c8424014194676d608cb989f62ef8039efd50ff4b3f33286d06db8", [:mix], [], "hexpm", "680ab01ef5d15b161ed6a95449fac5c6b8f60055677a8e79acf01b27baa4390b"},
-  "cbor": {:hex, :cbor, "1.0.1", "39511158e8ea5a57c1fcb9639aaa7efde67129678fee49ebbda780f6f24959b0", [:mix], [], "hexpm", "5431acbe7a7908f17f6a9cd43311002836a34a8ab01876918d8cfb709cd8b6a2"},
   "eddy": {:hex, :eddy, "1.0.0", "f316ca9dfda42f4cb326884fab82c2abf182130f871f1d9a4cc0d8ff395f885c", [:mix], [], "hexpm", "30ea26748bef52df940330d22d28a93cc1ae40d60385536a0b5b457f8da66ca0"},
   "ex_bech32": {:hex, :ex_bech32, "0.5.1", "7adbd9969ba06c2f8426d0692bc0a603c44e84c39f7fab46446191fde46b17fb", [:mix], [{:rustler, ">= 0.0.0", [hex: :rustler, repo: "hexpm", optional: true]}, {:rustler_precompiled, "~> 0.6", [hex: :rustler_precompiled, repo: "hexpm", optional: false]}], "hexpm", "ccf16f7030dc6d652fbae8de77c31b5781bdda6492f12c32f604ef8e8e944895"},
   "jason": {:hex, :jason, "1.4.0", "e855647bc964a44e2f67df589ccf49105ae039d4179db7f6271dfd3843dc27e6", [:mix], [{:decimal, "~> 1.0 or ~> 2.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "79a3791085b2a0f743ca04cec0f7be26443738779d09302e01318f97bdb82121"},
   "recase": {:hex, :recase, "0.7.0", "3f2f719f0886c7a3b7fe469058ec539cb7bbe0023604ae3bce920e186305e5ae", [:mix], [], "hexpm", "36f5756a9f552f4a94b54a695870e32f4e72d5fad9c25e61bc4a3151c08a4e0c"},
-  "rustler": {:hex, :rustler, "0.27.0", "53ffe86586fd1a2ea60ad07f1506962914eb669dba26c23010cf672662ec8d64", [:mix], [{:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: false]}, {:toml, "~> 0.6", [hex: :toml, repo: "hexpm", optional: false]}], "hexpm", "d7f5ccaec6e7a96f700330898ff2e9d48818e40789fd2951ba41ecf457986e92"},
   "rustler_precompiled": {:hex, :rustler_precompiled, "0.7.0", "5d0834fc06dbc76dd1034482f17b1797df0dba9b491cef8bb045fcaca94bcade", [:mix], [{:castore, "~> 0.1 or ~> 1.0", [hex: :castore, repo: "hexpm", optional: false]}, {:rustler, "~> 0.23", [hex: :rustler, repo: "hexpm", optional: true]}], "hexpm", "fdf43a6835f4e4de5bfbc4c019bfb8c46d124bd4635fefa3e20d9a2bbbec1512"},
-  "toml": {:hex, :toml, "0.7.0", "fbcd773caa937d0c7a02c301a1feea25612720ac3fa1ccb8bfd9d30d822911de", [:mix], [], "hexpm", "0690246a2478c1defd100b0c9b89b4ea280a22be9a7b313a8a058a2408a2fa70"},
 }
