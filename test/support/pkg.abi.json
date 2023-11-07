@@ -1,97 +1,100 @@
 {
   "version": 1,
-  "exports": [
+  "exports": [0, 1],
+  "imports": [],
+  "defs": [
     {
       "kind": 0,
-      "code": {
-        "name": "Badge",
-        "extends": "Jig",
-        "fields": [
-          {
-            "kind": 0,
-            "name": "name",
-            "type": {
-              "name": "string",
-              "args": []
-            }
+      "name": "Badge",
+      "extends": "Jig",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "args": []
           }
-        ],
-        "methods": [
-          {
-            "kind": 1,
-            "name": "constructor",
-            "args": [
-              {
-                "name": "name",
-                "type": {
-                  "name": "string",
-                  "args": []
-                }
+        }
+      ],
+      "methods": [
+        {
+          "kind": 0,
+          "name": "constructor",
+          "args": [
+            {
+              "name": "name",
+              "type": {
+                "name": "string",
+                "args": []
               }
-            ],
-            "rtype": {
-              "name": "",
-              "args": []
             }
-          },
-          {
-            "kind": 2,
-            "name": "rename",
-            "args": [
-              {
-                "name": "name",
-                "type": {
-                  "name": "string",
-                  "args": []
-                }
-              }
-            ],
-            "rtype": {
-              "name": "void",
-              "args": []
-            }
-          },
-          {
-            "kind": 0,
-            "name": "helloWorld",
-            "args": [
-              {
-                "name": "msg",
-                "type": {
-                  "name": "string",
-                  "args": []
-                }
-              }
-            ],
-            "rtype": {
-              "name": "string",
-              "args": []
-            }
+          ],
+          "rtype": {
+            "name": "",
+            "args": []
           }
-        ]
-      }
+        },
+        {
+          "kind": 0,
+          "name": "rename",
+          "args": [
+            {
+              "name": "name",
+              "type": {
+                "name": "string",
+                "args": []
+              }
+            }
+          ],
+          "rtype": {
+            "name": "void",
+            "args": []
+          }
+        }
+      ]
     },
     {
       "kind": 1,
-      "code": {
-        "name": "helloWorld",
-        "args": [
-          {
-            "name": "msg",
-            "type": {
-              "name": "string",
-              "args": []
-            }
+      "name": "helloWorld",
+      "args": [
+        {
+          "name": "msg",
+          "type": {
+            "name": "string",
+            "args": []
           }
-        ],
-        "rtype": {
-          "name": "string",
-          "args": []
         }
+      ],
+      "rtype": {
+        "name": "string",
+        "args": []
       }
     }
   ],
-  "imports": [],
-  "objects": [],
-  "typeIds": []
+  "typeIds": [
+    {
+      "id": 0,
+      "name": "ArrayBuffer"
+    },
+    {
+      "id": 1,
+      "name": "string"
+    },
+    {
+      "id": 5,
+      "name": "Jig"
+    },
+    {
+      "id": 6,
+      "name": "Output"
+    },
+    {
+      "id": 7,
+      "name": "Lock"
+    },
+    {
+      "id": 8,
+      "name": "JigInitParams"
+    }
+  ]
 }

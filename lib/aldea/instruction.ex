@@ -12,8 +12,7 @@ defmodule Aldea.Instruction do
   Record.defrecord(:loadbyorigin_instruction, :LOADBYORIGIN, origin: nil)
   Record.defrecord(:new_instruction, :NEW, idx: nil, export_idx: nil, arg_data: nil)
   Record.defrecord(:call_instruction, :CALL, idx: nil, method_idx: nil, arg_data: nil)
-  Record.defrecord(:exec_instruction, :EXEC, idx: nil, export_idx: nil, method_idx: nil, arg_data: nil)
-  Record.defrecord(:execfunc_instruction, :EXECFN, idx: nil, export_idx: nil, arg_data: nil)
+  Record.defrecord(:exec_instruction, :EXEC, idx: nil, export_idx: nil, arg_data: nil)
   Record.defrecord(:fund_instruction, :FUND, idx: nil)
   Record.defrecord(:lock_instruction, :LOCK, idx: nil, pubkey_hash: nil)
   Record.defrecord(:deploy_instruction, :DEPLOY, pkg_data: nil)
@@ -30,7 +29,6 @@ defmodule Aldea.Instruction do
     or Record.is_record(input, :NEW)
     or Record.is_record(input, :CALL)
     or Record.is_record(input, :EXEC)
-    or Record.is_record(input, :EXECFN)
     or Record.is_record(input, :FUND)
     or Record.is_record(input, :LOCK)
     or Record.is_record(input, :DEPLOY)
@@ -45,7 +43,6 @@ defmodule Aldea.Instruction do
     new_instruction() |
     call_instruction() |
     exec_instruction() |
-    execfunc_instruction() |
     fund_instruction() |
     lock_instruction() |
     deploy_instruction() |
@@ -57,8 +54,7 @@ defmodule Aldea.Instruction do
   @type loadbyorigin_instruction() :: record(:loadbyorigin_instruction, origin: <<_::272>>)
   @type new_instruction() :: record(:new_instruction, idx: integer, export_idx: integer, arg_data: binary)
   @type call_instruction() :: record(:call_instruction, idx: integer, method_idx: integer, arg_data: binary)
-  @type exec_instruction() :: record(:exec_instruction, idx: integer, export_idx: nil, method_idx: integer, arg_data: binary)
-  @type execfunc_instruction() :: record(:execfunc_instruction, idx: integer, export_idx: integer, arg_data: binary)
+  @type exec_instruction() :: record(:exec_instruction, idx: integer, export_idx: integer, arg_data: binary)
   @type fund_instruction() :: record(:fund_instruction, idx: integer)
   @type lock_instruction() :: record(:lock_instruction, idx: integer, pubkey_hash: <<_::256>>)
   @type deploy_instruction() :: record(:deploy_instruction, pkg_data: binary)
@@ -74,7 +70,6 @@ defmodule Aldea.Instruction do
     NEW: 0xB1,
     CALL: 0xB2,
     EXEC: 0xB3,
-    EXECFN: 0xB4,
     # Output
     FUND: 0xC1,
     LOCK: 0xC2,
@@ -93,8 +88,7 @@ defmodule Aldea.Instruction do
     # Calling
     NEW: [:u16, :u16, {:bin, :fixed}],
     CALL: [:u16, :u16, {:bin, :fixed}],
-    EXEC: [:u16, :u16, :u16, {:bin, :fixed}],
-    EXECFN: [:u16, :u16, {:bin, :fixed}],
+    EXEC: [:u16, :u16, {:bin, :fixed}],
     # Output
     FUND: [:u16],
     LOCK: [:u16, {:bin, 20}],

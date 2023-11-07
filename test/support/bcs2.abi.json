@@ -1,196 +1,186 @@
 {
   "version": 1,
-  "exports": [
+  "exports": [0, 1, 2],
+  "imports": [],
+  "defs": [
     {
       "kind": 0,
-      "code": {
-        "name": "GrandParent",
-        "extends": "Jig",
-        "fields": [
-          {
-            "kind": 0,
-            "name": "a",
-            "type": {
-              "name": "string",
-              "nullable": false,
-              "args": []
-            }
-          },
-          {
-            "kind": 0,
-            "name": "b",
-            "type": {
-              "name": "string",
-              "nullable": false,
-              "args": []
-            }
+      "name": "GrandParent",
+      "extends": "Jig",
+      "fields": [
+        {
+          "name": "a",
+          "type": {
+            "name": "string",
+            "nullable": false,
+            "args": []
           }
-        ],
-        "implements": [],
-        "methods": [
-          {
-            "kind": 1,
-            "name": "constructor",
-            "args": [
-              {
-                "name": "a",
-                "type": {
-                  "name": "string",
-                  "nullable": false,
-                  "args": []
-                }
-              },
-              {
-                "name": "b",
-                "type": {
-                  "name": "string",
-                  "nullable": false,
-                  "args": []
-                }
+        },
+        {
+          "name": "b",
+          "type": {
+            "name": "string",
+            "nullable": false,
+            "args": []
+          }
+        }
+      ],
+      "implements": [],
+      "methods": [
+        {
+          "kind": 0,
+          "name": "constructor",
+          "args": [
+            {
+              "name": "a",
+              "type": {
+                "name": "string",
+                "nullable": false,
+                "args": []
               }
-            ],
-            "rtype": null
-          }
-        ]
-      }
+            },
+            {
+              "name": "b",
+              "type": {
+                "name": "string",
+                "nullable": false,
+                "args": []
+              }
+            }
+          ],
+          "rtype": null
+        }
+      ]
     },
     {
       "kind": 0,
-      "code": {
-        "name": "Parent",
-        "extends": "GrandParent",
-        "fields": [
-          {
-            "kind": 0,
-            "name": "c",
-            "type": {
-              "name": "u32",
-              "nullable": false,
-              "args": []
-            }
+      "name": "Parent",
+      "extends": "GrandParent",
+      "fields": [
+        {
+          "name": "c",
+          "type": {
+            "name": "u32",
+            "nullable": false,
+            "args": []
           }
-        ],
-        "implements": [],
-        "methods": [
-          {
-            "kind": 1,
-            "name": "constructor",
-            "args": [
-              {
-                "name": "a",
-                "type": {
-                  "name": "string",
-                  "nullable": false,
-                  "args": []
-                }
-              },
-              {
-                "name": "b",
-                "type": {
-                  "name": "string",
-                  "nullable": false,
-                  "args": []
-                }
-              },
-              {
-                "name": "c",
-                "type": {
-                  "name": "u32",
-                  "nullable": false,
-                  "args": []
-                }
+        }
+      ],
+      "implements": [],
+      "methods": [
+        {
+          "kind": 0,
+          "name": "constructor",
+          "args": [
+            {
+              "name": "a",
+              "type": {
+                "name": "string",
+                "nullable": false,
+                "args": []
               }
-            ],
-            "rtype": null
-          }
-        ]
-      }
+            },
+            {
+              "name": "b",
+              "type": {
+                "name": "string",
+                "nullable": false,
+                "args": []
+              }
+            },
+            {
+              "name": "c",
+              "type": {
+                "name": "u32",
+                "nullable": false,
+                "args": []
+              }
+            }
+          ],
+          "rtype": null
+        }
+      ]
     },
     {
       "kind": 0,
-      "code": {
-        "name": "Child",
-        "extends": "Parent",
-        "fields": [
-          {
-            "kind": 0,
-            "name": "d",
-            "type": {
-              "name": "Map",
-              "nullable": false,
-              "args": [
-                {
-                  "name": "string",
-                  "nullable": false,
-                  "args": []
-                },
-                {
-                  "name": "string",
-                  "nullable": false,
-                  "args": []
-                }
-              ]
-            }
-          }
-        ],
-        "implements": [],
-        "methods": [
-          {
-            "kind": 1,
-            "name": "constructor",
+      "name": "Child",
+      "extends": "Parent",
+      "fields": [
+        {
+          "name": "d",
+          "type": {
+            "name": "Map",
+            "nullable": false,
             "args": [
               {
-                "name": "a",
-                "type": {
-                  "name": "string",
-                  "nullable": false,
-                  "args": []
-                }
+                "name": "string",
+                "nullable": false,
+                "args": []
               },
               {
-                "name": "b",
-                "type": {
-                  "name": "string",
-                  "nullable": false,
-                  "args": []
-                }
-              },
-              {
-                "name": "c",
-                "type": {
-                  "name": "u32",
-                  "nullable": false,
-                  "args": []
-                }
-              },
-              {
-                "name": "d",
-                "type": {
-                  "name": "Map",
-                  "nullable": false,
-                  "args": [
-                    {
-                      "name": "string",
-                      "nullable": false,
-                      "args": []
-                    },
-                    {
-                      "name": "string",
-                      "nullable": false,
-                      "args": []
-                    }
-                  ]
-                }
+                "name": "string",
+                "nullable": false,
+                "args": []
               }
-            ],
-            "rtype": null
+            ]
           }
-        ]
-      }
+        }
+      ],
+      "implements": [],
+      "methods": [
+        {
+          "kind": 0,
+          "name": "constructor",
+          "args": [
+            {
+              "name": "a",
+              "type": {
+                "name": "string",
+                "nullable": false,
+                "args": []
+              }
+            },
+            {
+              "name": "b",
+              "type": {
+                "name": "string",
+                "nullable": false,
+                "args": []
+              }
+            },
+            {
+              "name": "c",
+              "type": {
+                "name": "u32",
+                "nullable": false,
+                "args": []
+              }
+            },
+            {
+              "name": "d",
+              "type": {
+                "name": "Map",
+                "nullable": false,
+                "args": [
+                  {
+                    "name": "string",
+                    "nullable": false,
+                    "args": []
+                  },
+                  {
+                    "name": "string",
+                    "nullable": false,
+                    "args": []
+                  }
+                ]
+              }
+            }
+          ],
+          "rtype": null
+        }
+      ]
     }
   ],
-  "imports": [],
-  "objects": [],
   "typeIds": [
     {
       "id": 2,

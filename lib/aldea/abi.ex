@@ -9,29 +9,41 @@ defmodule Aldea.ABI do
   defstruct version: 1,
             exports: [],
             imports: [],
-            objects: [],
+            defs: [],
             type_ids: []
 
   BCS.defschema Schema.init
 
   @type t() :: %__MODULE__{
     version: non_neg_integer(),
-    exports: list(export_node()),
-    imports: list(import_node()),
-    objects: list(object_node()),
+    exports: list(non_neg_integer()),
+    imports: list(non_neg_integer()),
+    defs: list(code_def_node()),
     type_ids: list(type_id_node()),
   }
 
-  @type kind_enum() :: non_neg_integer()
+  @type code_def_node() :: class_node() | function_node() | interface_node() | object_node() | proxy_node()
+  @type export_node() :: class_node() | function_node() | interface_node() | object_node()
+  @type import_node() :: proxy_node() | object_node()
 
-  @type export_node() :: %{
-    kind: kind_enum(),
-    code: code_node(),
+  @code_kind %{
+    class: 0,
+    function: 1,
+    interface: 2,
+    object: 3,
+    # enum: 4,
+    proxy_class: 100,
+    proxy_function: 101,
+    proxy_interface: 102,
   }
 
-  @type code_node() :: class_node() | function_node() | interface_node()
+  #@method_kind %{
+  #  public: 0,
+  #  protected: 1,
+  #}
 
   @type class_node() :: %{
+    kind: 0,
     name: String.t(),
     extends: String.t(),
     implements: list(String.t()),
@@ -40,37 +52,39 @@ defmodule Aldea.ABI do
   }
 
   @type function_node() :: %{
+    kind: 1,
     name: String.t(),
     args: list(arg_node()),
     rtype: type_node(),
   }
 
   @type interface_node() :: %{
+    kind: 2,
     name: String.t(),
-    extends: String.t() | nil,
+    extends: list(String.t()),
     fields: list(field_node()),
     methods: list(method_node()),
   }
 
-  @type import_node() :: %{
-    kind: kind_enum(),
-    name: String.t(),
-    pkg: String.t(),
-  }
-
   @type object_node() :: %{
+    kind: 3,
     name: String.t(),
     fields: list(field_node()),
   }
 
+  @type proxy_node() :: %{
+    kind: 100 | 101 | 102,
+    name: String.t(),
+    pkg: String.t(),
+  }
+
   @type field_node() :: %{
-    kind: kind_enum(),
     name: String.t(),
     type: type_node(),
   }
 
   @type method_node() :: %{
-    kind: kind_enum(),
+    kind: 0 | 1,
     name: String.t(),
     args: list(arg_node()),
     rtype: type_node() | nil,
@@ -90,26 +104,6 @@ defmodule Aldea.ABI do
   @type type_id_node() :: %{
     id: non_neg_integer(),
     name: String.t(),
-  }
-
-  @code_kind %{
-    class: 0,
-    function: 1,
-    interface: 2,
-  }
-
-  #@field_kind %{
-  #  public: 0,
-  #  private: 1,
-  #  protected: 2,
-  #}
-
-  @method_kind %{
-    static: 0,
-    constructor: 1,
-    public: 2,
-    private: 3,
-    protected: 4,
   }
 
   @doc """
@@ -186,16 +180,20 @@ defmodule Aldea.ABI do
   @doc """
   TODO
   """
-  @spec find_code(t(), String.t()) :: code_node() | nil
-  def find_code(%__MODULE__{exports: exports}, name) when is_binary(name) do
-    with %{code: code} <- Enum.find(exports, & &1.code.name === name), do: code
+  @spec find_export(t(), String.t()) :: code_def_node() | nil
+  def find_export(%__MODULE__{exports: exports, defs: defs}, name) when is_binary(name) do
+    exports
+    |> Enum.map(& Enum.at(defs, &1))
+    |> Enum.find(& &1.name === name)
   end
 
-  @spec find_code(t(), String.t(), atom()) :: code_node() | nil
-  def find_code(%__MODULE__{exports: exports}, name, kind)
+  @spec find_export(t(), String.t(), atom()) :: code_def_node() | nil
+  def find_export(%__MODULE__{exports: exports, defs: defs}, name, kind)
     when is_binary(name) and is_atom(kind)
   do
-    with %{code: code} <- Enum.find(exports, & &1.code.name === name and &1.kind === @code_kind[kind]), do: code
+    exports
+    |> Enum.map(& Enum.at(defs, &1))
+    |> Enum.find(& &1.name === name and &1.kind === @code_kind[kind])
   end
 
   @doc """
@@ -238,22 +236,15 @@ defmodule Aldea.ABI do
   end
 
   # TODO
-  @spec find_node(t(), String.t()) :: code_node() | method_node() | nil
+  @spec find_node(t(), String.t()) :: code_def_node() | method_node() | nil
   defp find_node(%__MODULE__{} = abi, key) when is_binary(key) do
-    case Regex.run(~r/^(\w+)(\$|_)(\w+)$/, key) do
-      [^key, class_name | tail] ->
-        with %{methods: methods} <- find_code(abi, class_name, :class) do
-          case tail do
-            [_, "constructor"] ->
-              Enum.find(methods, & &1.name == "constructor" and &1.kind == @method_kind[:constructor])
-            ["_", method_name] ->
-              Enum.find(methods, & &1.name == method_name and &1.kind == @method_kind[:static])
-            ["$", method_name] ->
-              Enum.find(methods, & &1.name == method_name and &1.kind == @method_kind[:public])
-          end
+    case Regex.run(~r/^(\w+)_(\w+)$/, key) do
+      [^key, class_name, method_name] ->
+        with %{methods: methods} <- find_export(abi, class_name, :class) do
+          Enum.find(methods, & &1.name == method_name)
         end
       nil ->
-        find_code(abi, key)
+        find_export(abi, key)
     end
   end
 

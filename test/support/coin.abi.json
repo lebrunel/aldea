@@ -1,89 +1,86 @@
 {
   "version": 1,
-  "exports": [
+  "exports": [0],
+  "imports": [],
+  "defs": [
     {
       "kind": 0,
-      "code": {
-        "name": "Coin",
-        "extends": "Jig",
-        "implements": [],
-        "fields": [
-          {
-            "kind": 0,
-            "name": "motos",
-            "type": {
-              "name": "u64",
-              "args": []
-            }
+      "name": "Coin",
+      "extends": "Jig",
+      "implements": [],
+      "fields": [
+        {
+          "name": "motos",
+          "type": {
+            "name": "u64",
+            "args": []
           }
-        ],
-        "methods": [
-          {
-            "kind": 1,
-            "name": "constructor",
-            "args": [
-              {
-                "name": "amount",
-                "type": {
-                  "name": "u64",
-                  "args": []
-                }
+        }
+      ],
+      "methods": [
+        {
+          "kind": 0,
+          "name": "constructor",
+          "args": [
+            {
+              "name": "amount",
+              "type": {
+                "name": "u64",
+                "args": []
               }
-            ],
-            "rtype": null
-          },
-          {
-            "kind": 2,
-            "name": "send",
-            "args": [
-              {
-                "name": "amount",
-                "type": {
-                  "name": "u64",
-                  "args": []
-                }
-              },
-              {
-                "name": "newOwner",
-                "type": {
-                  "name": "Uint8Array",
-                  "args": []
-                }
-              }
-            ],
-            "rtype": {
-              "name": "Coin",
-              "args": []
             }
-          },
-          {
-            "kind": 2,
-            "name": "combine",
-            "args": [
-              {
-                "name": "coins",
-                "type": {
-                  "name": "Array",
-                  "args": [
-                    {
-                      "name": "Coin",
-                      "args": []
-                    }
-                  ]
-                }
+          ],
+          "rtype": null
+        },
+        {
+          "kind": 0,
+          "name": "send",
+          "args": [
+            {
+              "name": "amount",
+              "type": {
+                "name": "u64",
+                "args": []
               }
-            ],
-            "rtype": {
-              "name": "Coin",
-              "args": []
+            },
+            {
+              "name": "newOwner",
+              "type": {
+                "name": "Uint8Array",
+                "args": []
+              }
             }
+          ],
+          "rtype": {
+            "name": "Coin",
+            "args": []
           }
-        ]
-      }
+        },
+        {
+          "kind": 0,
+          "name": "combine",
+          "args": [
+            {
+              "name": "coins",
+              "type": {
+                "name": "Array",
+                "args": [
+                  {
+                    "name": "Coin",
+                    "args": []
+                  }
+                ]
+              }
+            }
+          ],
+          "rtype": {
+            "name": "Coin",
+            "args": []
+          }
+        }
+      ]
     }
   ],
-  "imports": [],
-  "objects": [],
   "typeIds": [
     {
       "id": 0,

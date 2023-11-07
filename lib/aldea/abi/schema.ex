@@ -4,13 +4,13 @@ defmodule Aldea.ABI.Schema do
 
   def init, do: [
     version: :u16,
-    exports: {:seq, {:mod, __MODULE__.ExportNode }},
-    imports: {:seq, import_node() },
-    objects: {:seq, object_node() },
+    imports: {:seq, :u16 },
+    exports: {:seq, :u16 },
+    defs: {:seq, {:mod, __MODULE__.CodeDefNode }},
     type_ids: {:seq, type_id_node() },
   ]
 
-  def import_node, do: {:struct, [
+  def proxy_node, do: {:struct, [
     kind: :u8,
     name: :bin,
     pkg: :bin
@@ -25,7 +25,6 @@ defmodule Aldea.ABI.Schema do
   ]}
 
   def field_node, do: {:struct, [
-    kind: :u8,
     name: :bin,
     type: {:mod, __MODULE__.TypeNode},
   ]}
@@ -65,8 +64,7 @@ defmodule Aldea.ABI.Schema do
     name: :bin,
   ]}
 
-
-  defmodule ExportNode do
+  defmodule CodeDefNode do
     alias Aldea.{ABI, BCS}
     @behaviour BCS.Encodable
 
@@ -74,11 +72,11 @@ defmodule Aldea.ABI.Schema do
       with {:ok, kind, data} <- BCS.read(data, :u8),
            {:ok, code, data} <- BCS.read(data, code_schema(kind))
       do
-        {:ok, %{kind: kind, code: code}, data}
+        {:ok, Map.put(code, :kind, kind), data}
       end
     end
 
-    def bcs_write(data, %{kind: kind, code: code}) when is_binary(data) do
+    def bcs_write(data, %{kind: kind} = code) when is_binary(data) do
       data
       |> BCS.write(kind, :u8)
       |> BCS.write(code, code_schema(kind))
@@ -87,6 +85,8 @@ defmodule Aldea.ABI.Schema do
     defp code_schema(0), do: ABI.Schema.class_node()
     defp code_schema(1), do: ABI.Schema.function_node()
     defp code_schema(2), do: ABI.Schema.interface_node()
+    defp code_schema(3), do: ABI.Schema.object_node()
+    defp code_schema(n) when n in 100..102, do: ABI.Schema.proxy_node()
   end
 
 
