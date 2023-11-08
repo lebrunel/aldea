@@ -1,15 +1,16 @@
 defmodule Aldea.BCS.Encodable do
   @moduledoc """
-  TODO
+  A module that provides an interface for encoding and decoding data in the BCS
+  (Binary Canonical Serialization) format.
   """
 
   @doc """
-  TODO
+  Reads a binary and decodes it into a term.
   """
   @callback bcs_read(binary()) :: Aldea.BCS.read_result()
 
   @doc """
-  TODO
+  Encodes a term into a binary.
   """
   @callback bcs_write(term(), term()) :: binary()
 

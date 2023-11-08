@@ -1,10 +1,11 @@
 defmodule Aldea.PubKey do
   @moduledoc """
-  A Public Key represents a point (X and Y coordinates) on the Ed25519 curve.
-  A Public Key is derived from a corresponding PrivKey.
+  This module provides functionalities related to a Public Key in the Aldea
+  system.
 
-  PubKeys are serialized as the 32-byte Y coordinate, with the last byte
-  encoding the sign of X.
+  A Public Key represents a point (X and Y coordinates) on the Ed25519 curve. A
+  Public Key is derived from a corresponding PrivKey and is serialized as the
+  32-byte Y coordinate, with the last byte encoding the sign of X.
   """
   alias Aldea.PrivKey
   import Aldea.Encoding, only: [
@@ -14,7 +15,9 @@ defmodule Aldea.PubKey do
 
   defstruct [:point]
 
-  @typedoc "Public Key"
+  @typedoc """
+  Type representing a Public Key.
+  """
   @type t() :: %__MODULE__{
     point: Eddy.Point.t()
   }
@@ -25,7 +28,7 @@ defmodule Aldea.PubKey do
   }
 
   @doc """
-  Returns a PubKey from the given PrivKey.
+  Returns a PubKey from a given PrivKey.
   """
   @spec from_privkey(PrivKey.t()) :: t()
   def from_privkey(%PrivKey{d: d}) do
@@ -34,25 +37,21 @@ defmodule Aldea.PubKey do
   end
 
   @doc """
-  Returns a PubKey from the given 32-byte binary.
+  Returns a PubKey from a given binary. Supports optional encoding formats like
+  `:hex` or `:base64`.
   """
   @spec from_bin(binary()) :: {:ok, t()} | {:error, term()}
-  def from_bin(bin) when is_binary(bin) do
-    with {:ok, %{point: point}} <- Eddy.PubKey.from_bin(bin) do
+  @spec from_bin(binary(), atom()) :: {:ok, t()} | {:error, term()}
+  def from_bin(bin, encoding \\ nil) when is_binary(bin) do
+    with {:ok, bin} <- bin_decode(bin, encoding),
+         {:ok, %{point: point}} <- Eddy.PubKey.from_bin(bin)
+    do
       {:ok, struct(__MODULE__, point: point)}
     end
   end
 
   @doc """
-  Returns a PubKey from the given hex-encoded string.
-  """
-  @spec from_hex(String.t()) :: {:ok, t()} | {:error, term()}
-  def from_hex(hex) when is_binary(hex) do
-    with {:ok, bin} <- bin_decode(hex, :hex), do: from_bin(bin)
-  end
-
-  @doc """
-  Returns a PubKey from the given bech32m-encoded string.
+  Returns a PubKey from a given bech32m-encoded string.
   """
   @spec from_string(String.t()) :: {:ok, t()} | {:error, term()}
   def from_string(str) when is_binary(str) do
@@ -61,20 +60,16 @@ defmodule Aldea.PubKey do
   end
 
   @doc """
-  Returns the PubKey as a 32-byte binary.
+  Converts a PubKey to a binary. Supports optional encoding formats like `:hex`
+  or `:base64`.
   """
   @spec to_bin(t()) :: binary()
-  def to_bin(%__MODULE__{point: point}),
-    do: Eddy.Serializable.Encoder.serialize(point)
+  @spec to_bin(t(), atom()) :: binary()
+  def to_bin(%__MODULE__{point: point}, encoding \\ nil),
+    do: Eddy.Serializable.Encoder.serialize(point) |> bin_encode(encoding)
 
   @doc """
-  Returns the PubKey as a hex-encoded string.
-  """
-  @spec to_hex(t()) :: String.t()
-  def to_hex(%__MODULE__{} = pubkey), do: to_bin(pubkey) |> bin_encode(:hex)
-
-  @doc """
-  Returns the PubKey as a bech32m-encoded string.
+  Converts a PubKey to a bech32m-encoded string.
   """
   @spec to_string(t()) :: String.t()
   def to_string(%__MODULE__{} = pubkey) do

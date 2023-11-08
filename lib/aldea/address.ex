@@ -1,18 +1,22 @@
 defmodule Aldea.Address do
   @moduledoc """
-  An Aldea address is the 20-byte BLAKE3 hash of a public key. It is encoded as
-  a string using Bech32m with the prefix `"addr"`.
+  This module handles Aldea addresses which are 20-byte BLAKE3 hashes of public
+  keys. Addresses are encoded as strings using Bech32m and prefixed with `"addr"`.
 
   Example:
 
-      addr1hldfmuyecahs4c9uypz6w4rv04cpzf50a5rsfc
+  ```text
+  addr1hldfmuyecahs4c9uypz6w4rv04cpzf50a5rsfc
+  ```
   """
   alias Aldea.PubKey
   import Aldea.Encoding, only: [b32_decode: 2, b32_encode: 2]
 
   defstruct [:hash]
 
-  @typedoc "Address"
+  @typedoc """
+  Type representing an Aldea address.
+  """
   @type t() :: %__MODULE__{hash: <<_::160>>}
 
   @bech32_prefix %{
@@ -21,7 +25,7 @@ defmodule Aldea.Address do
   }
 
   @doc """
-  Returns an Address from the given PubKey.
+  Generates an Aldea address from a Bech32m-encoded string.
   """
   @spec from_pubkey(PubKey.t()) :: t()
   def from_pubkey(%PubKey{} = pubkey) do
@@ -30,7 +34,7 @@ defmodule Aldea.Address do
   end
 
   @doc """
-  Returns an Address from the bech32m-encoded string.
+  Encodes an Aldea address into a string.
   """
   @spec from_string(String.t()) :: {:ok, t()} | {:error, term()}
   def from_string(str) when is_binary(str) do

@@ -1,10 +1,14 @@
 defmodule Aldea.ABI do
   @moduledoc """
-  TODO
+  The Aldea.ABI module is responsible for handling the Application Binary
+  Interface (ABI) operations. It provides functionalities for decoding,
+  encoding, and searching within an ABI structure.
   """
-  alias __MODULE__.Schema
+  require Aldea.BCS
+  import Aldea.Encoding, only: [bin_decode: 2, bin_encode: 2]
+  alias Aldea.ABI.Schema
   alias Aldea.{BCS, Pointer}
-  require BCS
+
 
   defstruct version: 1,
             exports: [],
@@ -14,6 +18,9 @@ defmodule Aldea.ABI do
 
   BCS.defschema Schema.init
 
+  @typedoc """
+  Type representing an ABI document.
+  """
   @type t() :: %__MODULE__{
     version: non_neg_integer(),
     exports: list(non_neg_integer()),
@@ -36,11 +43,6 @@ defmodule Aldea.ABI do
     proxy_function: 101,
     proxy_interface: 102,
   }
-
-  #@method_kind %{
-  #  public: 0,
-  #  protected: 1,
-  #}
 
   @type class_node() :: %{
     kind: 0,
@@ -107,7 +109,7 @@ defmodule Aldea.ABI do
   }
 
   @doc """
-  TODO
+  Decodes the given data using the provided ABI and key.
   """
   @spec decode(t(), String.t(), binary()) ::
     {:ok, list(BCS.elixir_type())} | {:error, term()}
@@ -140,7 +142,7 @@ defmodule Aldea.ABI do
   end
 
   @doc """
-  TODO
+  Encodes the given values using the provided ABI and key.
   """
   @spec encode(t(), String.t(), list(BCS.elixir_type())) :: binary()
   def encode(%__MODULE__{} = abi, key, vals)
@@ -178,7 +180,7 @@ defmodule Aldea.ABI do
   end
 
   @doc """
-  TODO
+  Finds an export code definition by its name in the given ABI.
   """
   @spec find_export(t(), String.t()) :: code_def_node() | nil
   def find_export(%__MODULE__{exports: exports, defs: defs}, name) when is_binary(name) do
@@ -197,15 +199,22 @@ defmodule Aldea.ABI do
   end
 
   @doc """
-  TODO
+  Converts a binary to an ABI document. Supports optional encoding formats
+  `:hex` or `:base64`.
   """
   @spec from_bin(binary()) :: {:ok, t()} | {:error, term()}
-  def from_bin(data) when is_binary(data) do
-    with {:ok, abi, _rest} <- bcs_read(data), do: {:ok, abi}
+  @spec from_bin(binary(), atom()) :: {:ok, t()} | {:error, term()}
+  def from_bin(data, encoding \\ nil) when is_binary(data) do
+    with {:ok, bin} <- bin_decode(data, encoding),
+         {:ok, abi, _rest} <- bcs_read(bin)
+    do
+      {:ok, abi}
+    end
   end
 
   @doc """
-  TODO
+  Converts a JSON encoded string to an ABI document. Supports optional encoding
+  formats `:hex` or `:base64`.
   """
   @spec from_json(String.t()) :: {:ok, t()} | {:error, term()}
   def from_json(data) when is_binary(data) do
@@ -219,13 +228,16 @@ defmodule Aldea.ABI do
   end
 
   @doc """
-  TODO
+  Encodes the ABI document as a binary. Supports optional encoding formats
+  `:hex` or `:base64`.
   """
   @spec to_bin(t()) :: binary()
-  def to_bin(%__MODULE__{} = abi), do: bcs_write(<<>>, abi)
+  @spec to_bin(t(), atom()) :: binary()
+  def to_bin(%__MODULE__{} = abi, encoding \\ nil),
+    do: bcs_write(<<>>, abi) |> bin_encode(encoding)
 
   @doc """
-  TODO
+  Encodes the ABI document as a JSON string.
   """
   @spec to_json(t()) :: String.t()
   def to_json(%__MODULE__{} = abi) do
@@ -235,7 +247,7 @@ defmodule Aldea.ABI do
     |> Jason.encode!(pretty: true)
   end
 
-  # TODO
+  # Finds a node by it's key
   @spec find_node(t(), String.t()) :: code_def_node() | method_node() | nil
   defp find_node(%__MODULE__{} = abi, key) when is_binary(key) do
     case Regex.run(~r/^(\w+)_(\w+)$/, key) do
@@ -248,7 +260,7 @@ defmodule Aldea.ABI do
     end
   end
 
-  # TODO
+  # Converts an ABI type node to a BCS type.
   @spec to_bcs_type(type_node()) :: BCS.bcs_type()
   defp to_bcs_type(%{nullable: true} = type),
     do: {:option, to_bcs_type(Map.put(type, :nullable, false))}

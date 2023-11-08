@@ -51,7 +51,7 @@ defmodule CanonicalsTest do
   end
 
   test "Kitchen sink serialisation" do
-    assert {:ok, tx} = Tx.from_hex(@tx.rawtx)
+    assert {:ok, tx} = Tx.from_bin(@tx.rawtx, :hex)
     assert length(tx.instructions) == 13
     for {a, b} <- Enum.zip(tx.instructions, @tx.instructions) do
       if elem(a, 0) in [:SIGN, :SIGNTO] do
@@ -60,7 +60,7 @@ defmodule CanonicalsTest do
         assert a == b
       end
     end
-    assert Tx.to_hex(tx) == @tx.rawtx
+    assert Tx.to_bin(tx, :hex) == @tx.rawtx
     assert Tx.verify(tx)
   end
 

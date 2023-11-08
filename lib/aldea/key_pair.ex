@@ -1,19 +1,27 @@
 defmodule Aldea.KeyPair do
   @moduledoc """
-  A KeyPair contains a Private Key and it's corresponding Public Key.
+  This module provides functionality related to a KeyPair, which contains a
+  Private Key and its corresponding Public Key.
   """
   alias Aldea.{PrivKey, PubKey}
 
   defstruct [:privkey, :pubkey]
 
-  @typedoc "Key Pair"
+  @typedoc """
+  Type representing a Key Pair.
+  """
   @type t() :: %__MODULE__{
     privkey: PrivKey.t(),
     pubkey: PubKey.t(),
   }
 
   @doc """
-  Securely generates a new random KeyPair.
+  Generates a new random KeyPair in a secure manner.
+
+  ## Examples
+
+      iex> Aldea.KeyPair.generate_key()
+      %Aldea.KeyPair{privkey: %Aldea.PrivKey{}, pubkey: %Aldea.PubKey{}}
   """
   @spec generate_key() :: t()
   def generate_key() do
@@ -21,7 +29,7 @@ defmodule Aldea.KeyPair do
   end
 
   @doc """
-  Returns a KeyPair from the given PrivKey.
+  Constructs a KeyPair from the provided Private Key.
   """
   @spec from_privkey(PrivKey.t()) :: t()
   def from_privkey(%PrivKey{} = privkey) do

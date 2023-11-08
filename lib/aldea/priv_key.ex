@@ -1,6 +1,7 @@
 defmodule Aldea.PrivKey do
   @moduledoc """
-  An Aldea Private Key is random 32-byte binary.
+  A module for handling Aldea private keys, which are random 32-byte binary
+  values.
   """
   import Aldea.Encoding, only: [
     b32_decode: 2, b32_encode: 2,
@@ -9,7 +10,9 @@ defmodule Aldea.PrivKey do
 
   defstruct [:d]
 
-  @typedoc "Private Key"
+  @typedoc """
+  Type representing a Private Key.
+  """
   @type t() :: %__MODULE__{d: <<_::256>>}
 
   @bech32_prefix %{
@@ -18,7 +21,7 @@ defmodule Aldea.PrivKey do
   }
 
   @doc """
-  Securely generates a new random PrivKey.
+  Generates a new private key securely and randomly.
   """
   @spec generate_key() :: t()
   def generate_key() do
@@ -27,26 +30,22 @@ defmodule Aldea.PrivKey do
   end
 
   @doc """
-  Returns a PrivKey from the given 32-byte binary.
+  Converts a given 32-byte binary into a private key. Supports optional encoding
+  formats like `:hex` or `:base64`.
   """
   @spec from_bin(binary()) :: {:ok, t()} | {:error, term()}
-  def from_bin(bin) when is_binary(bin) do
-    case byte_size(bin) do
-      32 -> {:ok, struct(__MODULE__, d: bin)}
-      n -> {:error, {:invalid_length, n}}
+  @spec from_bin(binary(), atom()) :: {:ok, t()} | {:error, term()}
+  def from_bin(bin, encoding \\ nil) when is_binary(bin) do
+    with {:ok, bin} <- bin_decode(bin, encoding) do
+      case byte_size(bin) do
+        32 -> {:ok, struct(__MODULE__, d: bin)}
+        n -> {:error, {:invalid_length, n}}
+      end
     end
   end
 
   @doc """
-  Returns a PrivKey from the given hex-encoded string.
-  """
-  @spec from_hex(String.t()) :: {:ok, t()} | {:error, term()}
-  def from_hex(hex) when is_binary(hex) do
-    with {:ok, bin} <- bin_decode(hex, :hex), do: from_bin(bin)
-  end
-
-  @doc """
-  Returns a PrivKey from the given bech32m-encoded string.
+  Converts a given bech32m-encoded string into a private key.
   """
   @spec from_string(String.t()) :: {:ok, t()} | {:error, term()}
   def from_string(str) when is_binary(str) do
@@ -55,19 +54,16 @@ defmodule Aldea.PrivKey do
   end
 
   @doc """
-  Returns the PrivKey as a 32-byte binary.
+  Converts a private key into a 32-byte binary. Supports optional encoding
+  formats like `:hex` or `:base64`.
   """
   @spec to_bin(t()) :: binary()
-  def to_bin(%__MODULE__{d: d}), do: d
+  @spec to_bin(t(), atom()) :: binary()
+  def to_bin(%__MODULE__{d: d}, encoding \\ nil),
+    do: bin_encode(d, encoding)
 
   @doc """
-  Returns the PrivKey as a hex-encoded string.
-  """
-  @spec to_hex(t()) :: String.t()
-  def to_hex(%__MODULE__{d: d}), do: bin_encode(d, :hex)
-
-  @doc """
-  Returns the PrivKey as a bech32m-encoded string.
+  Converts a private key into a bech32m-encoded string.
   """
   @spec to_string(t()) :: String.t()
   def to_string(%__MODULE__{d: d}) do

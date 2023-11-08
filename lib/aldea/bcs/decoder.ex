@@ -1,12 +1,13 @@
 defmodule Aldea.BCS.Decoder do
   @moduledoc """
-  TODO
+  An decoder module for Aldea Binary Coding Standard (BCS). It provides
+  functions to decode data into different types.
   """
   alias Aldea.BCS
   import Aldea.Encoding, only: [uleb_parse: 1]
 
   @doc """
-  TODO
+  Decodes a given binary data into the specified type.
   """
   @spec decode(binary(), BCS.bcs_type()) ::
     {:ok, BCS.elixir_type()} |
@@ -16,7 +17,7 @@ defmodule Aldea.BCS.Decoder do
   end
 
   @doc """
-  TODO
+  Reads a binary data and returns the result based on the specified type.
   """
   @spec read(binary(), BCS.bcs_type()) :: BCS.read_result()
 
@@ -100,7 +101,7 @@ defmodule Aldea.BCS.Decoder do
   def read(_data, _type), do: {:error, :bcs_read}
 
   @doc """
-  TODO
+  Reads each type from the binary data.
   """
   @spec read_each(binary(), list(BCS.bcs_type())) :: BCS.read_result()
   def read_each(data, types) when is_binary(data) and is_list(types),
@@ -118,7 +119,7 @@ defmodule Aldea.BCS.Decoder do
   end
 
   @doc """
-  TODO
+  Reads a sequence from the binary data.
   """
   @spec read_seq(
     binary(),
@@ -129,7 +130,7 @@ defmodule Aldea.BCS.Decoder do
   end
 
   @doc """
-  TODO
+  Reads a fixed-size sequence from the binary data.
   """
   @spec read_seq_fixed(
     binary(),
@@ -140,7 +141,6 @@ defmodule Aldea.BCS.Decoder do
     when is_binary(data) and is_integer(n) and is_function(reader),
     do: read_seq_fixed(data, n, [], reader)
 
-  # TODO
   @spec read_seq_fixed(
     binary(),
     non_neg_integer(),
@@ -153,7 +153,7 @@ defmodule Aldea.BCS.Decoder do
       do: read_seq_fixed(rest, len-1, [val | vals], reader)
   end
 
-  # todo
+  # Helper function for reading maps.
   @spec map_reader(binary(), BCS.bcs_type(), BCS.bcs_type()) :: BCS.read_result()
   defp map_reader(data, k, v) do
     with {:ok, key, data} <- read(data, k),

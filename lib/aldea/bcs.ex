@@ -1,10 +1,13 @@
 defmodule Aldea.BCS do
   @moduledoc """
-  TODO
+  This module provides a Binary Canonical Serialization (BCS) system for Elixir.
+  It includes types and functions for encoding and decoding data.
   """
   alias Aldea.BCS.{Decoder, Encoder}
 
-  @typedoc "TODO"
+  @typedoc """
+  BCS type that describes the possible types of data that can be serialized
+  """
   @type bcs_type() ::
     :bool |
     :f32 | :f64 |
@@ -18,7 +21,9 @@ defmodule Aldea.BCS do
     {:tuple, list(bcs_type())} |
     {:struct, list({atom(), bcs_type()})}
 
-  @typedoc "TODO"
+  @typedoc """
+  Elixir types that can be serialized
+  """
   @type elixir_type() ::
     boolean() |
     float() |
@@ -30,7 +35,9 @@ defmodule Aldea.BCS do
     struct() |
     nil
 
-  @typedoc "TODO"
+  @typedoc """
+  Possible results from reading a BCS type
+  """
   @type read_result() :: {:ok, BCS.elixir_type(), binary()} | {:error, term()}
 
   defdelegate decode(data, type), to: Decoder
@@ -46,7 +53,8 @@ defmodule Aldea.BCS do
   defdelegate write_seq_fixed(data, vals, writer), to: Encoder
 
   @doc """
-  TODO
+  Defines a schema for a BCS type. This macro sets up the necessary encoding and
+  decoding functions based on the provided schema.
   """
   defmacro defschema(schema \\ []) do
     quote location: :keep do

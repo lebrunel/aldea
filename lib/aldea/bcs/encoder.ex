@@ -1,6 +1,7 @@
 defmodule Aldea.BCS.Encoder do
   @moduledoc """
-  TODO
+  An encoder module for Aldea Binary Coding Standard (BCS). It provides
+  functions to encode various types of data into binary formats.
   """
   alias Aldea.BCS
   import Aldea.Encoding, only: [uleb_encode: 1]
@@ -8,13 +9,13 @@ defmodule Aldea.BCS.Encoder do
   @type writer() :: (binary(), BCS.elixir_type() -> binary())
 
   @doc """
-  TODO
+  Encodes a given value into a binary format based on the provided type.
   """
   @spec encode(BCS.elixir_type(), BCS.bcs_type()) :: binary()
   def encode(val, type), do: write(<<>>, val, type)
 
   @doc """
-  TODO
+  Writes a given value into a binary data based on the provided type.
   """
   @spec write(binary(), BCS.elixir_type(), BCS.bcs_type()) :: binary()
 
@@ -109,7 +110,7 @@ defmodule Aldea.BCS.Encoder do
     do: apply(mod, :bcs_write, [data, val])
 
   @doc """
-  TODO
+  Writes each value from a list into a binary data based on the provided types.
   """
   @spec write_each(binary(), list(BCS.elixir_type()), list(BCS.bcs_type())) :: binary()
   def write_each(data, [], []) when is_binary(data), do: data
@@ -118,7 +119,8 @@ defmodule Aldea.BCS.Encoder do
     do: write(data, val, t) |> write_each(vals, types)
 
   @doc """
-  TODO
+  Writes a sequence of values into a binary data using a provided writer
+  function.
   """
   @spec write_seq(
     binary(),
@@ -132,7 +134,8 @@ defmodule Aldea.BCS.Encoder do
     do: write(data, length(items), :uleb) |> write_seq_fixed(items, writer)
 
   @doc """
-  TODO
+  Writes a fixed sequence of values into a binary data using a provided writer
+  function.
   """
   @spec write_seq_fixed(
     binary(),
@@ -145,8 +148,7 @@ defmodule Aldea.BCS.Encoder do
     and is_function(writer),
     do: Enum.reduce(items, data, & writer.(&2, &1))
 
-
-  # todo
+  # Helper function for writing maps.
   @spec map_writer(
     binary(),
     {BCS.elixir_type(), BCS.elixir_type()},

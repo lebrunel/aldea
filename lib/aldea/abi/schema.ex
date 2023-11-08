@@ -65,6 +65,7 @@ defmodule Aldea.ABI.Schema do
   ]}
 
   defmodule CodeDefNode do
+    @moduledoc false
     alias Aldea.{ABI, BCS}
     @behaviour BCS.Encodable
 
@@ -91,6 +92,7 @@ defmodule Aldea.ABI.Schema do
 
 
   defmodule TypeNode do
+    @moduledoc false
     require Aldea.BCS
     alias Aldea.BCS
 

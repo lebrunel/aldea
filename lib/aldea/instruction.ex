@@ -1,6 +1,9 @@
 defmodule Aldea.Instruction do
   @moduledoc """
-  TODO
+  An Instruction is Aldea's smallest contiguous unit of execution.
+
+  It consists of an `OpCode` byte and a number of arguments, depending on the
+  `OpCode`.
   """
   require Record
   alias Aldea.BCS
@@ -20,7 +23,7 @@ defmodule Aldea.Instruction do
   Record.defrecord(:signto_instruction, :SIGNTO, sig: nil, pubkey: nil)
 
   @doc """
-  TODO
+  Determines if the given input is an instruction.
   """
   defguard is_instruction(input)
     when Record.is_record(input, :IMPORT)
@@ -35,7 +38,9 @@ defmodule Aldea.Instruction do
     or Record.is_record(input, :SIGN)
     or Record.is_record(input, :SIGNTO)
 
-  @typedoc "TODO"
+  @typedoc """
+  Defines the types of instructions.
+  """
   @type t() ::
     import_instruction() |
     load_instruction() |
@@ -100,13 +105,13 @@ defmodule Aldea.Instruction do
   }
 
   @doc """
-  TODO
+  Returns the map of op codes.
   """
   @spec op_codes() :: map()
   def op_codes(), do: @op_codes
 
   @doc """
-  TODO
+  Finds the opcode for the given key. Can search by the opcode atom of byte.
   """
   @spec find_opcode(atom() | non_neg_integer()) :: {atom(), non_neg_integer()} | {:error, term}
   def find_opcode(key) when is_atom(key),
@@ -115,7 +120,7 @@ defmodule Aldea.Instruction do
     do: Enum.find(@op_codes, {:error, :unknown_opcode}, fn {_k, v} -> v == byte end)
 
   @doc """
-  TODO
+  Converts a binary data to an instruction.
   """
   @spec from_bin(binary()) :: {:ok, t} | {:error, term()}
   def from_bin(data) when is_binary(data) do
@@ -123,14 +128,14 @@ defmodule Aldea.Instruction do
   end
 
   @doc """
-  TODO
+  Converts an instruction to binary data.
   """
   @spec to_bin(t()) :: binary()
   def to_bin(instruction) when is_instruction(instruction),
     do: bcs_write(<<>>, instruction)
 
   @doc """
-  TODO
+  Parses BCS encoded data to an instruction.
   """
   @spec bcs_read(binary()) :: BCS.read_result()
   def bcs_read(data) when is_binary(data) do
@@ -144,7 +149,7 @@ defmodule Aldea.Instruction do
   end
 
   @doc """
-  TODO
+  Writes an instruction to BCS encoded data.
   """
   @spec bcs_write(binary(), t()) :: binary()
   def bcs_write(data, instruction) when is_binary(data) and is_instruction(instruction) do

@@ -1,6 +1,7 @@
 defmodule Aldea.BlockHeader do
   @moduledoc """
-  TODO
+  This module represents the BlockHeader in the Aldea blockchain. It provides
+  functions for encoding, decoding, and manipulating the BlockHeader.
   """
   require Aldea.BCS
   alias Aldea.BCS
@@ -18,7 +19,9 @@ defmodule Aldea.BlockHeader do
                 state_commit: {:bin, 32},
                 sig: {:bin, 64}
 
-  @typedoc "BlockHeader"
+  @typedoc """
+  Type representing the BlockHeader.
+  """
   @type t() :: %__MODULE__{
     prev_block_id: <<_::256>>,
     creator: <<_::256>>,
@@ -30,43 +33,39 @@ defmodule Aldea.BlockHeader do
   }
 
   @doc """
-  Returns a Block from the given binary.
+  Decodes a binary representation of a block. Supports optional encoding formats
+  `:hex` or `:base64`.
   """
   @spec from_bin(binary()) :: {:ok, t()} | {:error, term()}
-  def from_bin(bin) do
-    with {:ok, block, <<>>} <- bcs_read(bin), do: {:ok, block}
+  @spec from_bin(binary(), atom()) :: {:ok, t()} | {:error, term()}
+  def from_bin(bin, encoding \\ nil) do
+    with {:ok, bin} <- bin_decode(bin, encoding),
+         {:ok, block, <<>>} <- bcs_read(bin)
+    do
+      {:ok, block}
+    end
   end
 
   @doc """
-  Returns a Block from the given hex-encoded string.
-  """
-  @spec from_hex(String.t()) :: {:ok, t()} | {:error, term()}
-  def from_hex(hex) when is_binary(hex) do
-    with {:ok, bin} <- bin_decode(hex, :hex), do: from_bin(bin)
-  end
-
-  @doc """
-  Returns the ID (hex-encoded hash) of the block.
+  Computes and returns the ID of the block, which is the hex-encoded hash of the
+  block.
   """
   @spec get_id(t()) :: String.t()
   def get_id(%__MODULE__{} = block), do: get_hash(block) |> bin_encode(:hex)
 
   @doc """
-  Returns the block hash.
+  Computes and returns the hash of the block.
   """
   @spec get_hash(t()) :: binary()
   def get_hash(%__MODULE__{} = block), do: to_bin(block) |> B3.hash()
 
   @doc """
-  Returns the Block as a 232-byte binary.
+  Encodes the block into a binary representation. Supports optional encoding
+  formats `:hex` or `:base64`.
   """
   @spec to_bin(t()) :: binary()
-  def to_bin(%__MODULE__{} = block), do: bcs_write(<<>>, block)
-
-  @doc """
-  Returns the Block as a hex-encoded string.
-  """
-  @spec to_hex(t()) :: String.t()
-  def to_hex(%__MODULE__{} = block), do: to_bin(block) |> bin_encode(:hex)
+  @spec to_bin(t(), atom()) :: binary()
+  def to_bin(%__MODULE__{} = block, encoding \\ nil),
+    do: bcs_write(<<>>, block) |> bin_encode(encoding)
 
 end
