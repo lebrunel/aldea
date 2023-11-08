@@ -4,18 +4,18 @@ defmodule Aldea.Tx do
   processed, the instructions are executed in the order they appear in the
   transaction.
   """
-  alias Aldea.{
-    Instruction,
-    Serializable,
-  }
+  require Aldea.BCS
+  alias Aldea.{BCS, Instruction}
+
   import Aldea.Encoding, only: [
     bin_decode: 2,
     bin_encode: 2,
-    varint_encode: 1,
-    varint_parse_structs: 2,
   ]
 
   defstruct version: 1, instructions: []
+
+  BCS.defschema version: :u16,
+                instructions: {:seq, {:mod, Instruction}}
 
   @typedoc "Transaction"
   @type t() :: %__MODULE__{
@@ -28,9 +28,7 @@ defmodule Aldea.Tx do
   """
   @spec from_bin(binary()) :: {:ok, t()} | {:error, term()}
   def from_bin(bin) when is_binary(bin) do
-    with {:ok, instruction, <<>>} <- Serializable.parse(struct(__MODULE__), bin) do
-      {:ok, instruction}
-    end
+    with {:ok, instruction, <<>>} <- bcs_read(bin), do: {:ok, instruction}
   end
 
   @doc """
@@ -58,19 +56,30 @@ defmodule Aldea.Tx do
   an index to return the sighash upto a given instruction.
   """
   @spec sighash(t(), integer()) :: binary()
+  def sighash(%__MODULE__{} = tx), do: sighash(tx, length(tx.instructions))
   def sighash(%__MODULE__{} = tx, to) when is_integer(to) and to >= -1 do
-    tx.instructions
-    |> Enum.slice(0..to)
-    |> Enum.filter(& &1.op not in [:SIGN, :SIGNTO])
-    |> Enum.reduce(<<>>, & &2 <> Serializable.serialize(&1))
-    |> B3.hash()
+    preimage = tx.instructions
+    |> Enum.slice(0..to-1)
+    |> Enum.reduce(<<>>, fn instruction, data ->
+      case instruction do
+        {op, _sig, pubkey} when op in [:SIGN, :SIGNTO] ->
+          data
+          |> BCS.write(Instruction.op_codes[op], :u8)
+          |> BCS.write(pubkey, {:bin, 32})
+
+        instruction ->
+          Instruction.bcs_write(data, instruction)
+      end
+    end)
+
+    B3.hash(preimage)
   end
 
   @doc """
-  Returns the Tx as a 32-byte binary.
+  Returns the Tx as a binary.
   """
   @spec to_bin(t()) :: binary()
-  def to_bin(%__MODULE__{} = tx), do: Serializable.serialize(tx)
+  def to_bin(%__MODULE__{} = tx), do: bcs_write(<<>>, tx)
 
   @doc """
   Returns the Tx as a hex-encoded string.
@@ -78,22 +87,20 @@ defmodule Aldea.Tx do
   @spec to_hex(t()) :: String.t()
   def to_hex(%__MODULE__{} = tx), do: to_bin(tx) |> bin_encode(:hex)
 
-
-  defimpl Serializable do
-    @impl true
-    def parse(tx, <<version::little-16, data::binary>>) do
-      with {:ok, instructions, rest} <- varint_parse_structs(data, Instruction) do
-        {:ok, struct(tx, [version: version, instructions: instructions]), rest}
+  @doc """
+  Verifies all SIGN and SIGNTO instructions in the Tx.
+  """
+  @spec verify(t()) :: boolean()
+  def verify(%__MODULE__{} = tx) do
+    tx.instructions
+    |> Enum.with_index()
+    |> Enum.all?(fn {instruction, i} ->
+      case instruction do
+        {:SIGN, sig, pubkey} -> Eddy.verify(sig, sighash(tx), pubkey)
+        {:SIGNTO, sig, pubkey} -> Eddy.verify(sig, sighash(tx, i), pubkey)
+        _ -> true
       end
-    end
-
-    @impl true
-    def serialize(tx) do
-      data = <<tx.version::little-16>> <> varint_encode(length(tx.instructions))
-      Enum.reduce(tx.instructions, data, fn inst, bin ->
-        bin <> Serializable.serialize(inst)
-      end)
-    end
+    end)
   end
 
 end

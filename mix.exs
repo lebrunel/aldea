@@ -22,9 +22,11 @@ defmodule Aldea.MixProject do
   defp deps do
     [
       {:b3, "~> 0.1"},
-      {:cbor, "~> 1.0"},
       {:eddy, "~> 1.0"},
-      {:ex_bech32, "~> 0.4"},
+      {:ex_bech32, "~> 0.5"},
+      {:ex_doc, "~> 0.30"},
+      {:jason, "~> 1.4"},
+      {:recase, "~> 0.7"},
     ]
   end
 end

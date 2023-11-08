@@ -1,0 +1,401 @@
+{
+  "version": 1,
+  "exports": [0, 1, 2, 3, 4, 5, 6, 7],
+  "imports": [],
+  "defs": [
+    {
+      "kind": 0,
+      "name": "Foo",
+      "extends": "Jig",
+      "fields": [
+        {
+          "name": "a",
+          "type": {
+            "name": "string",
+            "nullable": true,
+            "args": []
+          }
+        },
+        {
+          "name": "b",
+          "type": {
+            "name": "u64",
+            "nullable": false,
+            "args": []
+          }
+        }
+      ],
+      "implements": [],
+      "methods": [
+        {
+          "kind": 0,
+          "name": "constructor",
+          "args": [
+            {
+              "name": "a",
+              "type": {
+                "name": "string",
+                "nullable": true,
+                "args": []
+              }
+            },
+            {
+              "name": "b",
+              "type": {
+                "name": "u64",
+                "nullable": false,
+                "args": []
+              }
+            }
+          ],
+          "rtype": null
+        },
+        {
+          "kind": 0,
+          "name": "setA",
+          "args": [
+            {
+              "name": "a",
+              "type": {
+                "name": "string",
+                "nullable": false,
+                "args": []
+              }
+            }
+          ],
+          "rtype": {
+            "name": "void",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "kind": 0,
+          "name": "setB",
+          "args": [
+            {
+              "name": "b",
+              "type": {
+                "name": "u64",
+                "nullable": false,
+                "args": []
+              }
+            }
+          ],
+          "rtype": {
+            "name": "void",
+            "nullable": false,
+            "args": []
+          }
+        }
+      ]
+    },
+    {
+      "kind": 0,
+      "name": "Bar",
+      "extends": "Jig",
+      "fields": [
+        {
+          "name": "a",
+          "type": {
+            "name": "string",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "name": "b",
+          "type": {
+            "name": "Baz",
+            "nullable": false,
+            "args": []
+          }
+        }
+      ],
+      "implements": [],
+      "methods": [
+        {
+          "kind": 0,
+          "name": "constructor",
+          "args": [
+            {
+              "name": "a",
+              "type": {
+                "name": "string",
+                "nullable": false,
+                "args": []
+              }
+            },
+            {
+              "name": "b",
+              "type": {
+                "name": "Baz",
+                "nullable": false,
+                "args": []
+              }
+            }
+          ],
+          "rtype": null
+        },
+        {
+          "kind": 0,
+          "name": "setA",
+          "args": [
+            {
+              "name": "a",
+              "type": {
+                "name": "string",
+                "nullable": false,
+                "args": []
+              }
+            }
+          ],
+          "rtype": {
+            "name": "void",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "kind": 0,
+          "name": "setB",
+          "args": [
+            {
+              "name": "b",
+              "type": {
+                "name": "Baz",
+                "nullable": false,
+                "args": []
+              }
+            }
+          ],
+          "rtype": {
+            "name": "void",
+            "nullable": false,
+            "args": []
+          }
+        }
+      ]
+    },
+    {
+      "kind": 0,
+      "name": "Baz",
+      "extends": "Jig",
+      "fields": [],
+      "implements": [],
+      "methods": [
+        {
+          "kind": 0,
+          "name": "constructor",
+          "args": [],
+          "rtype": null
+        }
+      ]
+    },
+    {
+      "kind": 1,
+      "name": "test1",
+      "args": [
+        {
+          "name": "a",
+          "type": {
+            "name": "string",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "name": "b",
+          "type": {
+            "name": "u64",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "name": "c",
+          "type": {
+            "name": "string",
+            "nullable": true,
+            "args": []
+          }
+        }
+      ],
+      "rtype": {
+        "name": "void",
+        "nullable": false,
+        "args": []
+      }
+    },
+    {
+      "kind": 1,
+      "name": "test_n1",
+      "args": [
+        {
+          "name": "obj",
+          "type": {
+            "name": "Primitives",
+            "nullable": false,
+            "args": []
+          }
+        }
+      ],
+      "rtype": {
+        "name": "void",
+        "nullable": false,
+        "args": []
+      }
+    },
+    {
+      "kind": 1,
+      "name": "test_n2",
+      "args": [
+        {
+          "name": "obj",
+          "type": {
+            "name": "Recursive",
+            "nullable": false,
+            "args": []
+          }
+        }
+      ],
+      "rtype": {
+        "name": "void",
+        "nullable": false,
+        "args": []
+      }
+    },
+    {
+      "kind": 3,
+      "name": "Primitives",
+      "fields": [
+        {
+          "name": "foo",
+          "type": {
+            "name": "string",
+            "nullable": true,
+            "args": []
+          }
+        },
+        {
+          "name": "i8",
+          "type": {
+            "name": "i8",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "name": "u8",
+          "type": {
+            "name": "u8",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "name": "i64",
+          "type": {
+            "name": "i64",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "name": "u64",
+          "type": {
+            "name": "u64",
+            "nullable": false,
+            "args": []
+          }
+        }
+      ]
+    },
+    {
+      "kind": 3,
+      "name": "Recursive",
+      "fields": [
+        {
+          "name": "foo",
+          "type": {
+            "name": "string",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "name": "bar",
+          "type": {
+            "name": "Array",
+            "nullable": false,
+            "args": [
+              {
+                "name": "Recursive",
+                "nullable": false,
+                "args": []
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "typeIds": [
+    {
+      "id": 2,
+      "name": "string"
+    },
+    {
+      "id": 4,
+      "name": "Foo"
+    },
+    {
+      "id": 6,
+      "name": "Jig"
+    },
+    {
+      "id": 8,
+      "name": "Output"
+    },
+    {
+      "id": 9,
+      "name": "Lock"
+    },
+    {
+      "id": 10,
+      "name": "JigInitParams"
+    },
+    {
+      "id": 12,
+      "name": "Bar"
+    },
+    {
+      "id": 15,
+      "name": "Baz"
+    },
+    {
+      "id": 16,
+      "name": "Primitives"
+    },
+    {
+      "id": 17,
+      "name": "Recursive"
+    },
+    {
+      "id": 18,
+      "name": "Array<Recursive>"
+    },
+    {
+      "id": 19,
+      "name": "$Foo"
+    },
+    {
+      "id": 21,
+      "name": "$Bar"
+    },
+    {
+      "id": 22,
+      "name": "$Baz"
+    }
+  ]
+}

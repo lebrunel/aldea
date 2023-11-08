@@ -1,0 +1,256 @@
+{
+  "version": 1,
+  "exports": [0, 1, 2, 3, 4],
+  "imports": [],
+  "defs": [
+    {
+      "kind": 0,
+      "name": "Nested",
+      "extends": "Jig",
+      "fields": [
+        {
+          "name": "map",
+          "type": {
+            "name": "Map",
+            "nullable": false,
+            "args": [
+              {
+                "name": "string",
+                "nullable": false,
+                "args": []
+              },
+              {
+                "name": "Nested",
+                "nullable": false,
+                "args": []
+              }
+            ]
+          }
+        }
+      ],
+      "implements": [],
+      "methods": [
+        {
+          "kind": 0,
+          "name": "constructor",
+          "args": [],
+          "rtype": null
+        },
+        {
+          "kind": 1,
+          "name": "add",
+          "args": [
+            {
+              "name": "key",
+              "type": {
+                "name": "string",
+                "nullable": false,
+                "args": []
+              }
+            },
+            {
+              "name": "foo",
+              "type": {
+                "name": "Nested",
+                "nullable": false,
+                "args": []
+              }
+            }
+          ],
+          "rtype": {
+            "name": "void",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "kind": 0,
+          "name": "get",
+          "args": [
+            {
+              "name": "key",
+              "type": {
+                "name": "string",
+                "nullable": false,
+                "args": []
+              }
+            }
+          ],
+          "rtype": {
+            "name": "Nested",
+            "nullable": false,
+            "args": []
+          }
+        }
+      ]
+    },
+    {
+      "kind": 1,
+      "name": "test1",
+      "args": [
+        {
+          "name": "a",
+          "type": {
+            "name": "string",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "name": "b",
+          "type": {
+            "name": "string",
+            "nullable": false,
+            "args": []
+          }
+        }
+      ],
+      "rtype": {
+        "name": "void",
+        "nullable": false,
+        "args": []
+      }
+    },
+    {
+      "kind": 1,
+      "name": "test2",
+      "args": [
+        {
+          "name": "a",
+          "type": {
+            "name": "string",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "name": "map",
+          "type": {
+            "name": "Map",
+            "nullable": false,
+            "args": [
+              {
+                "name": "string",
+                "nullable": false,
+                "args": []
+              },
+              {
+                "name": "Nested",
+                "nullable": false,
+                "args": []
+              }
+            ]
+          }
+        }
+      ],
+      "rtype": {
+        "name": "void",
+        "nullable": false,
+        "args": []
+      }
+    },
+    {
+      "kind": 1,
+      "name": "test3",
+      "args": [
+        {
+          "name": "a",
+          "type": {
+            "name": "string",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "name": "map",
+          "type": {
+            "name": "Map",
+            "nullable": false,
+            "args": [
+              {
+                "name": "string",
+                "nullable": false,
+                "args": []
+              },
+              {
+                "name": "string",
+                "nullable": false,
+                "args": []
+              }
+            ]
+          }
+        }
+      ],
+      "rtype": {
+        "name": "void",
+        "nullable": false,
+        "args": []
+      }
+    },
+    {
+      "kind": 1,
+      "name": "test4",
+      "args": [
+        {
+          "name": "a",
+          "type": {
+            "name": "string",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "name": "b",
+          "type": {
+            "name": "Nested",
+            "nullable": false,
+            "args": []
+          }
+        }
+      ],
+      "rtype": {
+        "name": "void",
+        "nullable": false,
+        "args": []
+      }
+    }
+  ],
+  "typeIds": [
+    {
+      "id": 2,
+      "name": "string"
+    },
+    {
+      "id": 4,
+      "name": "Nested"
+    },
+    {
+      "id": 6,
+      "name": "Jig"
+    },
+    {
+      "id": 8,
+      "name": "Output"
+    },
+    {
+      "id": 9,
+      "name": "Lock"
+    },
+    {
+      "id": 10,
+      "name": "JigInitParams"
+    },
+    {
+      "id": 12,
+      "name": "Map<string,Nested>"
+    },
+    {
+      "id": 13,
+      "name": "Map<string,string>"
+    },
+    {
+      "id": 14,
+      "name": "$Nested"
+    }
+  ]
+}
