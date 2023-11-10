@@ -10,8 +10,9 @@ defmodule Aldea.BlockHeader do
     bin_encode: 2,
   ]
 
-  defstruct [:prev_block_id, :creator, :created_at, :tx_root, :state_root, :state_commit, :sig]
-  BCS.defschema prev_block_id: {:bin, 32},
+  defstruct [:height, :prev_block_id, :creator, :created_at, :tx_root, :state_root, :state_commit, :sig]
+  BCS.defschema height: :u64,
+                prev_block_id: {:bin, 32},
                 creator: {:bin, 32},
                 created_at: :u64,
                 tx_root: {:bin, 32},
@@ -23,6 +24,7 @@ defmodule Aldea.BlockHeader do
   Type representing the BlockHeader.
   """
   @type t() :: %__MODULE__{
+    height: non_neg_integer(),
     prev_block_id: <<_::256>>,
     creator: <<_::256>>,
     created_at: non_neg_integer(),
