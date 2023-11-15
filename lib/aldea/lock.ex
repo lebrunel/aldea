@@ -4,6 +4,7 @@ defmodule Aldea.Lock do
   """
   require Record
   alias Aldea.BCS
+  import Aldea.Encoding, only: [bin_decode: 2, bin_encode: 2]
 
   @behaviour BCS.Encodable
 
@@ -53,16 +54,23 @@ defmodule Aldea.Lock do
   @doc """
   Converts a binary data to an lock record.
   """
-  @spec from_bin(binary()) :: {:ok, t} | {:error, term()}
-  def from_bin(data) when is_binary(data) do
-    with {:ok, lock, _rest} <- bcs_read(data), do: {:ok, lock}
+  @spec from_bin(binary()) :: {:ok, t()} | {:error, term()}
+  @spec from_bin(binary(), atom()) :: {:ok, t()} | {:error, term()}
+  def from_bin(bin, encoding \\ nil) when is_binary(bin) do
+    with {:ok, bin} <- bin_decode(bin, encoding),
+         {:ok, lock, <<>>} <- bcs_read(bin)
+    do
+      {:ok, lock}
+    end
   end
 
   @doc """
   Converts a lock record to binary data.
   """
   @spec to_bin(t()) :: binary()
-  def to_bin(lock) when is_lock(lock), do: bcs_write(<<>>, lock)
+  @spec to_bin(t(), atom()) :: binary()
+  def to_bin(lock, encoding \\ nil) when is_lock(lock),
+    do: bcs_write(<<>>, lock) |> bin_encode(encoding)
 
   @doc """
   Reads the BCS data and returns a lock record.
