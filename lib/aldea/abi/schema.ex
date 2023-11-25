@@ -4,8 +4,8 @@ defmodule Aldea.ABI.Schema do
 
   def init, do: [
     version: :u16,
-    imports: {:seq, :u16 },
     exports: {:seq, :u16 },
+    imports: {:seq, :u16 },
     defs: {:seq, {:mod, __MODULE__.CodeDefNode }},
     type_ids: {:seq, type_id_node() },
   ]
