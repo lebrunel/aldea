@@ -77,7 +77,7 @@ defmodule Aldea.Lock do
   """
   @impl true
   def bcs_read(data) when is_binary(data) do
-    with {:ok, byte, data} <- BCS.read(data, :u8),
+    with {:ok, byte, data} <- BCS.read(data, :i8),
          {lock_type, ^byte} <- find_lock_type(byte),
          {:ok, lock_data, rest} <- BCS.read(data, lock_data_schema(lock_type))
     do
@@ -91,7 +91,7 @@ defmodule Aldea.Lock do
   @impl true
   def bcs_write(data, {:lock, type, lock_data}) when is_binary(data) do
     data
-    |> BCS.write(@lock_types[type], :u8)
+    |> BCS.write(@lock_types[type], :i8)
     |> BCS.write(lock_data, lock_data_schema(type))
   end
 
