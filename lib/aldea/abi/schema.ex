@@ -51,7 +51,7 @@ defmodule Aldea.ABI.Schema do
     name: :bin,
     extends: {:seq, :bin},
     fields: {:seq, field_node()},
-    methods: {:seq, method_node()},
+    methods: {:seq, function_node()},
   ]}
 
   def object_node, do: {:struct, [
